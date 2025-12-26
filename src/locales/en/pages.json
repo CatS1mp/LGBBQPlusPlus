@@ -1,0 +1,816 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back",
+    "staff": {
+      "sectionLabel": "Staff dashboard",
+      "stats": {
+        "printersOnline": "Printers online",
+        "jobsToday": "Jobs today",
+        "pagesMonth": "Pages this month",
+        "caption": {
+          "total": "Out of {{total}}",
+          "lastJob": "Last job finished 6m ago"
+        }
+      },
+      "weekly": {
+        "title": "Weekly activity",
+        "description": "Completed jobs and pages",
+        "jobs": "Jobs",
+        "pages": "Pages"
+      },
+      "paper": {
+        "title": "Paper size usage",
+        "description": "Share of paper sizes used this month"
+      },
+      "printer": {
+        "title": "Status",
+        "description": "Health and utilization overview",
+        "cta": "Manage printers",
+        "online": "Online",
+        "offline": "Offline",
+        "maintenance": "Maintenance",
+        "utilization": "Utilization",
+        "utilizationLabel": "System utilization",
+        "note": ""
+      },
+      "quickActions": {
+        "title": "Quick actions",
+        "description": "Jump to key admin screens",
+        "badges": {
+          "realtime": "Real-time"
+        },
+        "items": {
+          "printers": {
+            "title": "Printer status",
+            "description": "Check on/off/maintenance and reroute quickly."
+          },
+          "reports": {
+            "title": "Reports",
+            "description": "Export PDF/CSV for this week’s jobs and usage."
+          },
+          "logs": {
+            "title": "System logs",
+            "description": "Track errors, warnings, and maintenance history."
+          },
+          "config": {
+            "title": "Printer configuration",
+            "description": "Update print policies, limits, and permissions."
+          }
+        }
+      },
+      "alerts": {
+        "title": "Alerts",
+        "description": "Items to resolve soon",
+        "severity": {
+          "info": "Info",
+          "warning": "Warning",
+          "critical": "Critical"
+        },
+        "items": {
+          "lowPaper": {
+            "title": "A3 paper is low at R305",
+            "time": "10 minutes ago",
+            "action": "Refill paper"
+          },
+          "driverUpdate": {
+            "title": "Driver update needed for HP 4100",
+            "time": "35 minutes ago",
+            "action": "View details"
+          },
+          "printerOffline": {
+            "title": "Printer R402 is offline",
+            "time": "1 hour ago",
+            "action": "Reroute jobs"
+          }
+        }
+      }
+    },
+    "student": {
+      "sectionLabel": "Student home",
+      "greeting": "Hello, {{name}}",
+      "subtext": "Check balance, print fast, and track your recent jobs.",
+      "ctaPrimary": "Print document",
+      "ctaSecondary": "Buy more pages",
+      "balance": {
+        "title": "A4 balance",
+        "resetLabel": "Resets on {{date}}",
+        "badge": "Priority",
+        "conversion": "Paper conversion",
+        "note": "Jobs in queue will start when printers are available.",
+        "quotaTitle": "Monthly quota",
+        "quotaSubtitle": "150 A4 pages / month, when used up will use recharge balance."
+      },
+      "stats": {
+        "jobsThisMonth": "Jobs this month",
+        "pagesThisMonth": "Pages printed",
+        "successRate": "Success rate",
+        "pending": "Pending jobs",
+        "balance": "Balance",
+        "availableBalance": "Available balance",
+        "changePercent": "{{percent}}% compared to last month",
+        "title": "Home"
+      },
+      "quickActions": {
+        "title": "Quick actions",
+        "description": "Jump into your most used flows"
+      },
+      "recent": {
+        "title": "Recent prints",
+        "description": "Stay on top of the latest jobs",
+        "pagesLabel": "{{pages}} A4 pages",
+        "viewAll": "View history",
+        "status": {
+          "completed": "Completed",
+          "pending": "Pending",
+          "failed": "Failed"
+        }
+      },
+      "conversions": {
+        "title": "Paper conversion",
+        "description": "How A4 balance converts to A3/A5",
+        "label": "{{ratio}} × A4"
+      },
+      "profile": {
+        "title": "Profile",
+        "description": "Quick academic snapshot",
+        "studentCode": "Student code",
+        "major": "Major",
+        "class": "Class",
+        "gpaLabel": "GPA",
+        "cta": "View profile"
+      },
+      "achievements": {
+        "title": "Activities",
+        "description": "Clubs, awards, highlights"
+      },
+      "highlights": {
+        "title": "Quick notes",
+        "description": "Tips to keep printing smooth"
+      },
+      "tips": {
+        "title": "Quick tips",
+        "description": "Keep your printing smooth."
+      },
+      "quickActions": {
+        "title": "Quick actions",
+        "description": "Jump into your most used flows"
+      },
+      "navigation": {
+        "dashboard": "Dashboard",
+        "print": "Print",
+        "history": "History",
+        "printers": "Printers",
+        "profile": "Profile",
+        "buyPages": "Buy Pages",
+        "settings": "Settings",
+        "managePrinters": "Manage Printers",
+        "manageStudents": "Manage Students",
+        "reports": "Reports",
+        "systemLogs": "System Logs",
+        "configuration": "Configuration"
+      }
+    }
+  },
+  "student": {
+    "printers": {
+      "title": "Printers Info",
+      "description": "View available printers and their status",
+      "status": {
+        "all": "All",
+        "online": "Online",
+        "busy": "Printing",
+        "maintenance": "Maintenance",
+        "offline": "Offline"
+      },
+      "filters": {
+        "readyOnly": "Show only ready printers",
+        "colorOnly": "Color printers only",
+        "duplexOnly": "Duplex printers only"
+      },
+      "listTitle": "Printer list ({{count}})",
+      "noResults": "No printers match the filters.",
+      "notices": "Notices",
+      "summary": {
+        "total": "Total printers",
+        "online": "Online",
+        "busy": "Printing"
+      },
+      "jobs": "jobs",
+      "jobsCount": "{{count}} jobs",
+      "yes": "Yes",
+      "no": "No",
+      "features": "Features",
+      "colorPrinting": "Color printing:",
+      "duplexPrinting": "Duplex printing:",
+      "model": "Model",
+      "queue": "Queue",
+      "queueLabel": "Queue:",
+      "maxPaperSize": "Max paper size:",
+      "oneSided": "1-sided",
+      "twoSided": "2-sided",
+      "color": "Color",
+      "grayscale": "Grayscale",
+      "blackWhite": "Black & White",
+      "printSide": "Print side:",
+      "selectTheme": "Select theme",
+      "selectLanguage": "Select language",
+      "searchPlaceholder": "Search printers...",
+      "filterStatus": "Status",
+      "modalTitle": "Printer details",
+      "location": "Location:",
+      "uptime": "Uptime:",
+      "note": "Note"
+    },
+    "print": {
+      "title": "Print Document",
+      "description": "Upload and print your documents",
+      "steps": {
+        "upload": "Upload",
+        "choosePrinter": "Choose Printer",
+        "configuration": "Configuration",
+        "confirm": "Confirm"
+      },
+      "step1": {
+        "title": "Upload Document",
+        "description": "Select the file you want to print. Supports PDF, Word, Excel, PowerPoint and images",
+        "dragDrop": "Drag and drop file here or click to select",
+        "fileSizeLimit": "Max 50MB • PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG",
+        "saveFile": "Save File",
+        "next": "Next",
+        "fileSaved": "File saved successfully!",
+        "selectFile": "Select a file to print",
+        "changeFile": "Change File"
+      },
+      "step2": {
+        "title": "Choose Printer",
+        "description": "Select the printer you want to use to print your document",
+        "choosePrinter": "Choose Printer",
+        "selectPrinter": "Select a printer for your document",
+        "search": "Search by name, room, building...",
+        "building": "Building",
+        "room": "Room",
+        "allBuildings": "All Buildings",
+        "allRooms": "All Rooms",
+        "found": "Found",
+        "printers": "printers",
+        "status": {
+          "online": "Online",
+          "offline": "Offline",
+          "maintenance": "Maintenance"
+        },
+        "features": {
+          "color": "Color",
+          "duplex": "Duplex"
+        },
+        "noResults": "No printers found",
+        "back": "Back",
+        "next": "Next"
+      },
+      "step3": {
+        "title": "Print Configuration",
+        "description": "Customize print settings for your document",
+        "paperSize": "Paper Size",
+        "orientation": "Orientation",
+        "portrait": "Portrait",
+        "landscape": "Landscape",
+        "printSide": "Print Side",
+        "oneSided": "1-sided",
+        "doubleSided": "2-sided",
+        "colorMode": "Color Mode",
+        "color": "Color",
+        "grayscale": "Grayscale",
+        "blackWhite": "Black & White",
+        "numberOfCopies": "Number of Copies",
+        "summary": "Summary",
+        "costCalc": "Cost calculation",
+        "currentBalance": "Current balance",
+        "remainingBalance": "Remaining balance",
+        "estimatedPages": "Estimated Pages",
+        "estimatedCost": "Estimated Cost",
+        "notSupported": "Not Supported",
+        "back": "Back",
+        "next": "Next",
+        "selectPaperSize": "Select paper size",
+        "selectOrientation": "Select orientation",
+        "selectPrintSide": "Select print side",
+        "selectColorMode": "Select color mode"
+      },
+      "step4": {
+        "title": "Confirm Print",
+        "description": "Please review the information before confirming the print job",
+        "fileInfo": "File Information",
+        "selectedPrinter": "Selected Printer",
+        "printConfig": "Print Configuration",
+        "estimatedCost": "Estimated Cost",
+        "costNote": "Cost may vary based on actual number of pages in the document",
+        "warning": "Important Notice",
+        "warningMessage": "Please ensure you have sufficient printing pages in your account. After confirmation, the print job will be added to the queue and will be processed as soon as the printer is ready.",
+        "processing": "Processing...",
+        "confirm": "Confirm Print",
+        "back": "Back",
+        "success": "Print job submitted successfully!",
+        "preview": "Preview",
+        "previewTitle": "Document preview",
+        "previewUnavailable": "Preview is not available for this file type.",
+        "openInNewTab": "Open in new tab",
+        "confirmTitle": "Confirm Print",
+        "file": "File",
+        "printer": "Printer",
+        "configuration": "Configuration",
+        "copies": "copies"
+      },
+      "uploadedFiles": {
+        "title": "Uploaded Files",
+        "description": "Files you've uploaded before",
+        "use": "Use",
+        "pages": "pages",
+        "prints": "prints",
+        "searchPlaceholder": "Search by file name...",
+        "filters": "Advanced Filters",
+        "dateFrom": "From Date",
+        "dateTo": "To Date",
+        "selectedCount": "{{count}} file(s) selected",
+        "bulkPrint": "Bulk Print",
+        "bulkDelete": "Bulk Delete",
+        "deselect": "Deselect", 
+        "table": {
+          "fileName": "File Name",
+          "pages": "Pages",
+          "uploadedAt": "Uploaded At",
+          "lastPrintedAt": "Last Printed At",
+          "printCount": "Print Count",
+          "actions": "Actions",
+          "print": "Print",
+          "delete": "Delete",
+          "noData": "No data matches the current filters.",
+          "showing": "Showing {{from}} - {{to}} of {{total}} files"
+        },
+        "deleteModal": {
+          "title": "Confirm Delete File",
+          "message": "Are you sure you want to delete file \"{{fileName}}\"? This action cannot be undone.",
+          "cancel": "Cancel",
+          "confirm": "Delete File"
+        },
+        "printModal": {
+          "title": "Confirm Reprint",
+          "message": "Do you want to reprint file \"{{fileName}}\"? You will be taken to the printer selection step.",
+          "cancel": "Cancel",
+          "confirm": "Reprint"
+        }
+      }
+    },
+    "history": {
+      "title": "Print History",
+      "description": "Search, filter and sort history",
+      "jobsThisMonth": "Jobs this month",
+      "jobs": "jobs",
+      "pagesPrinted": "Pages printed",
+      "successRate": "Success rate",
+      "noData": "No data matches the current filters.",
+      "recentTitle": "Recent print history",
+      "searchPlaceholder": "Search by document name, printer...",
+      "filterStatus": "Status",
+      "filterStartDate": "Start date",
+      "filterEndDate": "End date",
+      "filterButton": "Filters",
+      "status": {
+        "completed": "Completed",
+        "processing": "Processing",
+        "queued": "Queued",
+        "failed": "Failed"
+      },
+      "colorMode": {
+        "color": "Color",
+        "grayscale": "Grayscale",
+        "blackWhite": "Black & White"
+      },
+      "printSide": {
+        "oneSided": "1-sided",
+        "twoSided": "2-sided"
+      },
+      "pages": "pages",
+      "modalTitle": "Print history details",
+      "modalPrinter": "Printer",
+      "modalConfig": "Print configuration",
+      "modalPaperSize": "Paper size:",
+      "modalColorMode": "Color mode:",
+      "modalPrintSide": "Print side:",
+      "modalCopies": "Copies:",
+      "modalTotalPages": "Total pages:",
+      "modalTime": "Time",
+      "modalSubmitted": "Submitted:",
+      "modalCompleted": "Completed:"
+    },
+    "buyPages": {
+      "title": "Recharge Money",
+      "description": "Recharge money into your account via wallet or card",
+      "totalRecharges": "Total recharges",
+      "totalAmount": "Total amount recharged",
+      "totalBonus": "Total bonus",
+      "packagesTitle": "Choose recharge package",
+      "packagesDescription": "Recharge by package to receive bonus money",
+      "customTitle": "Custom recharge",
+      "customDescription": "Enter the amount you want to recharge (minimum 10,000₫)",
+      "customPlaceholder": "Enter amount (VND)",
+      "customButton": "Custom recharge",
+      "historyTitle": "Recharge history",
+      "noHistory": "No recharge history",
+      "packageBadge": {
+        "popular": "Popular",
+        "event": "Event"
+      },
+      "packageTotal": "Total:",
+      "selectPackage": "Select package",
+      "customRecharge": "Custom recharge",
+      "paymentModalTitle": "Confirm payment",
+      "paymentAmount": "Recharge amount",
+      "paymentTotal": "Total:",
+      "paymentMethodLabel": "Choose payment method",
+      "paymentMethod": {
+        "bank": "💳 Bank Transfer",
+        "momo": "📱 MoMo Wallet"
+      },
+      "status": {
+        "completed": "Completed",
+        "pending": "Processing",
+        "failed": "Failed",
+        "cancelled": "Cancelled"
+      }
+    },
+    "profile": {
+      "title": "Profile",
+      "description": "Manage your account profile",
+      "editProfile": "Edit Profile",
+      "changePassword": "Change Password",
+      "logOut": "Log Out",
+      "logOutSuccess": "Logged out successfully",
+      "badges": {
+        "student": "Student",
+        "active": "Active"
+      },
+      "balance": {
+        "title": "BALANCE",
+        "subtitle": "Available balance",
+        "topUp": "Top Up"
+      },
+      "contactInfo": {
+        "title": "CONTACT INFO",
+        "universityEmail": "University Email",
+        "mobileNumber": "Mobile Number",
+        "dateOfBirth": "Date of Birth",
+        "email": "Email",
+        "phone": "Phone"
+      },
+      "academicDetails": {
+        "title": "ACADEMIC DETAILS",
+        "studentId": "Student ID",
+        "faculty": "Faculty",
+        "major": "Major",
+        "academicYear": "Academic Year"
+      },
+      "changePasswordModal": {
+        "title": "Change Password",
+        "currentPassword": "Current Password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm New Password",
+        "currentPasswordPlaceholder": "Current password",
+        "newPasswordPlaceholder": "New password",
+        "confirmPasswordPlaceholder": "Confirm new password",
+        "submit": "Change Password",
+        "submitting": "Processing...",
+        "success": "Password changed successfully",
+        "error": "An error occurred while changing password",
+        "missingFields": "Please fill in all fields",
+        "mismatch": "New password and confirmation do not match",
+        "weakPassword": "Password must be at least 6 characters"
+      },
+      "editProfileModal": {
+        "title": "Edit Profile",
+        "email": "Email",
+        "phone": "Phone Number",
+        "fullName": "Full Name",
+        "fullNamePlaceholder": "Full name",
+        "phonePlaceholder": "Phone number",
+        "dateOfBirthPlaceholder": "DD/MM/YYYY",
+        "otpCode": "OTP Code",
+        "sendOtp": "Send OTP",
+        "sendingOtp": "Sending...",
+        "otpSent": "OTP code has been sent to your email",
+        "verifyOtp": "Verify",
+        "verifyingOtp": "Verifying...",
+        "otpVerified": "OTP verified successfully",
+        "submit": "Save Changes",
+        "submitting": "Processing...",
+        "success": "Profile updated successfully",
+        "error": "Failed to update profile",
+        "invalidOtp": "Invalid OTP code",
+        "emailChanged": "Email has changed. Please verify with OTP code."
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Manage your account and application settings",
+      "appearance": {
+        "title": "Appearance",
+        "description": "Choose how the dashboard looks on your device.",
+        "lightTitle": "Light mode",
+        "lightDescription": "Bright background with higher contrast for daytime viewing.",
+        "darkTitle": "Dark mode",
+        "darkDescription": "Dimmed interface that is gentle on the eyes at night.",
+        "activeLabel": "Active",
+        "systemTitle": "System",
+        "systemDescription": "Choose display mode according to system."
+      },
+      "language": {
+        "title": "Language",
+        "description": "Choose the display language for the application.",
+        "englishTitle": "English",
+        "englishDescription": "Use English as the interface language.",
+        "vietnameseTitle": "Vietnamese",
+        "vietnameseDescription": "Use Vietnamese as the interface language.",
+        "activeLabel": "Active"
+      },
+      "dockPosition": {
+        "title": "App Dock Position",
+        "description": "Choose where to display the application navigation dock.",
+        "leftTitle": "Left",
+        "leftDescription": "Display dock on the left side of the screen.",
+        "rightTitle": "Right",
+        "rightDescription": "Display dock on the right side of the screen.",
+        "bottomTitle": "Bottom",
+        "bottomDescription": "Display dock at the bottom of the screen (default).",
+        "activeLabel": "Active"
+      },
+      "musicPlayer": {
+        "title": "Christmas Background Music",
+        "description": "Play background music with Christmas theme while working.",
+        "nowPlaying": "Playlist",
+        "volume": "Volume",
+        "play": "Play",
+        "pause": "Pause",
+        "next": "Next",
+        "previous": "Previous",
+        "autoPlay": "Auto Play",
+        "autoPlayDescription": "Automatically play music when entering the page"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "push": "Push Notifications",
+        "pushDescription": "Receive push notifications for print jobs",
+        "email": "Email Alerts",
+        "emailDescription": "Receive email alerts for print completion"
+      },
+      "account": {
+        "title": "Account",
+        "changePassword": "Change Password",
+        "editProfile": "Edit Profile"
+      },
+      "about": {
+        "title": "About",
+        "version": "Version",
+        "build": "Build"
+      }
+    }
+  },
+  "staff": {
+    "managePrinters": {
+      "title": "Manage Printers",
+      "description": "Manage and monitor all printers in the system",
+      "stats": {
+        "totalBrands": "Total Brands",
+        "totalModels": "Total Models",
+        "totalPrinters": "Total Printers",
+        "activePrinters": "Active",
+        "maintenancePrinters": "Under Maintenance",
+        "needsMaintenance": "Needs Maintenance"
+      },
+      "tabs": {
+        "brands": "Printer Brands",
+        "models": "Printer Models",
+        "printers": "Physical Printers",
+        "activity": "Activity History"
+      },
+      "comingSoon": {
+        "brands": "Brand management feature will be implemented later.",
+        "models": "Model management feature will be implemented later.",
+        "activity": "Activity feature will be implemented later."
+      },
+      "modalInfo": "Information",
+      "search": {
+        "placeholder": "Search...",
+        "advancedFilters": "Advanced Filters",
+        "hideFilters": "Hide Filters"
+      },
+      "actions": {
+        "importExcel": "Import Excel",
+        "exportExcel": "Export Excel",
+        "addNew": "Add New",
+        "edit": "Edit",
+        "delete": "Delete",
+        "enable": "Enable",
+        "disable": "Disable",
+        "viewDetails": "View Details"
+      },
+      "filters": {
+        "status": "Status",
+        "brand": "Brand",
+        "room": "Room",
+        "fromDate": "From Date",
+        "toDate": "To Date",
+        "actionType": "Action Type",
+        "performedBy": "Performed By",
+        "paperSize": "Paper Size",
+        "features": "Features",
+        "countryOfOrigin": "Country of Origin",
+        "all": "All",
+        "enabled": "Active",
+        "disabled": "Under Maintenance",
+        "color": "Color Printing",
+        "duplex": "Duplex Printing",
+        "clearFilters": "Clear Filters",
+        "selectStartDate": "Select Start Date",
+        "selectEndDate": "Select End Date"
+      },
+      "table": {
+        "brandName": "Brand Name",
+        "countryOfOrigin": "Country of Origin",
+        "website": "Website",
+        "createdAt": "Created Date",
+        "modelName": "Model Name",
+        "description": "Description",
+        "maxPaperSize": "Max Paper Size",
+        "features": "Features",
+        "serialNumber": "Serial Number",
+        "brandModel": "Brand / Model",
+        "room": "Room",
+        "status": "Status",
+        "installedDate": "Installation Date",
+        "lastMaintenance": "Last Maintenance",
+        "actionType": "Action Type",
+        "performedBy": "Performed By",
+        "details": "Details",
+        "time": "Time",
+        "actions": "Actions",
+        "noData": "No data available",
+        "loading": "Loading data...",
+        "color": "Color",
+        "duplex": "2-sided",
+        "active": "Active",
+        "underMaintenance": "Under Maintenance"
+      },
+      "bulkActions": {
+        "selected": "Selected {{count}} items",
+        "enable": "Enable",
+        "disable": "Disable",
+        "deselect": "Deselect"
+      },
+      "pagination": {
+        "showing": "Showing",
+        "to": "to",
+        "of": "of",
+        "items": "items"
+      },
+      "actionTypes": {
+        "added": "Added",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "updated": "Updated",
+        "removed": "Removed",
+        "maintenance": "Maintenance"
+      },
+      "maintenance": {
+        "alertTitle": "Maintenance Alert",
+        "alertMessage": "There are {{count}} printers that need maintenance (more than 3 months since last maintenance)",
+        "daysAgo": "{{days}} days ago - Needs Maintenance"
+      },
+      "deleteModal": {
+        "deleteBrand": "Delete Brand",
+        "deleteModel": "Delete Model",
+        "deletePrinter": "Delete Printer",
+        "confirmDeleteBrand": "Are you sure you want to delete this brand?",
+        "confirmDeleteModel": "Are you sure you want to delete this model?",
+        "confirmDeletePrinter": "Are you sure you want to delete this printer?"
+      },
+      "listTitle": "Printer list ({{count}})",
+      "noResults": "No printers match."
+    },
+    "manageStudents": {
+      "title": "Manage Students",
+      "description": "View and manage student accounts",
+      "noResults": "No students match the filters.",
+      "searchPlaceholder": "Search students...",
+      "summary": {
+        "total": "Total students",
+        "active": "Active",
+        "suspended": "Suspended",
+        "graduated": "Graduated"
+      },
+      "filterYear": "Academic Year",
+      "filterYearAll": "All years",
+      "filterYear1": "Year 1",
+      "filterYear2": "Year 2",
+      "filterYear3": "Year 3",
+      "filterYear4": "Year 4",
+      "showFilters": "Show filters",
+      "hideFilters": "Hide filters",
+      "listTitle": "Student list ({{count}})",
+      "modalTitle": "Student details",
+      "modalContact": "Contact information",
+      "modalAcademic": "Academic information",
+      "modalYear": "Academic Year:",
+      "modalYearLabel": "Year {{year}}",
+      "previous": "Previous"
+    },
+    "systemLogs": {
+      "title": "System Logs",
+      "description": "View system activity and logs",
+      "noResults": "No logs match the filters.",
+      "total": "Total logs",
+      "today": "Today",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "filterActionType": "Action type",
+      "filterActionTypeAll": "All actions",
+      "previous": "Previous",
+      "modalUserInfo": "User information",
+      "modalName": "Name:",
+      "modalAction": "Action",
+      "modalFieldChanged": "Field changed:",
+      "modalTechnicalInfo": "Technical information"
+    },
+    "reports": {
+      "title": "Reports",
+      "description": "View and generate system reports",
+      "totalPrintJobs": "Total print jobs",
+      "totalPagesPrinted": "Total pages printed",
+      "totalRevenue": "Total revenue",
+      "successRate": "Success rate",
+      "statusDistribution": "Print status distribution",
+      "jobs": "jobs",
+      "pages": "pages",
+      "success": "success",
+      "dateRange": {
+        "7days": "Last 7 days",
+        "30days": "Last 30 days",
+        "90days": "Last 90 days",
+        "custom": "Custom",
+        "placeholder": "Select time range"
+      }
+    },
+    "configuration": {
+      "title": "Configuration",
+      "description": "Manage system settings and configuration",
+      "filterAllCategories": "All categories",
+      "filterCategory": "Select category",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Manage your account and application settings",
+      "comingSoon": "More settings will appear here soon.",
+      "appearance": {
+        "title": "Appearance",
+        "description": "Choose how the dashboard looks on your device.",
+        "lightTitle": "Light mode",
+        "lightDescription": "Bright background with higher contrast for daytime viewing.",
+        "darkTitle": "Dark mode",
+        "darkDescription": "Dimmed interface that is gentle on the eyes at night.",
+        "activeLabel": "Active"
+      },
+      "language": {
+        "title": "Language",
+        "description": "Choose the display language for the application.",
+        "englishTitle": "English",
+        "englishDescription": "Use English as the interface language.",
+        "vietnameseTitle": "Vietnamese",
+        "vietnameseDescription": "Use Vietnamese as the interface language.",
+        "activeLabel": "Active"
+      },
+      "dockPosition": {
+        "title": "App Dock Position",
+        "description": "Choose where to display the application navigation dock.",
+        "leftTitle": "Left",
+        "leftDescription": "Display dock on the left side of the screen.",
+        "rightTitle": "Right",
+        "rightDescription": "Display dock on the right side of the screen.",
+        "bottomTitle": "Bottom",
+        "bottomDescription": "Display dock at the bottom of the screen (default).",
+        "activeLabel": "Active"
+      },
+      "musicPlayer": {
+        "title": "Christmas Background Music",
+        "description": "Play background music with Christmas theme while working.",
+        "nowPlaying": "Playlist",
+        "volume": "Volume",
+        "play": "Play",
+        "pause": "Pause",
+        "next": "Next",
+        "previous": "Previous",
+        "autoPlay": "Auto Play",
+        "autoPlayDescription": "Automatically play music when entering the page"
+      }
+    }
+  }
+}

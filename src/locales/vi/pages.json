@@ -1,0 +1,816 @@
+{
+  "dashboard": {
+    "title": "Bảng điều khiển",
+    "welcome": "Chào mừng trở lại",
+    "staff": {
+      "sectionLabel": "Bảng điều khiển nhân viên",
+      "stats": {
+        "printersOnline": "Máy in online",
+        "jobsToday": "Công việc hôm nay",
+        "pagesMonth": "Trang trong tháng",
+        "caption": {
+          "total": "Trên tổng {{total}}",
+          "lastJob": "Công việc gần nhất 6 phút trước"
+        }
+      },
+      "weekly": {
+        "title": "Hoạt động trong tuần",
+        "description": "Số công việc và trang đã hoàn thành",
+        "jobs": "Công việc",
+        "pages": "Trang"
+      },
+      "paper": {
+        "title": "Phân bổ khổ giấy",
+        "description": "Tỉ lệ sử dụng các khổ giấy trong tháng"
+      },
+      "printer": {
+        "title": "Trạng thái",
+        "description": "Tình trạng và mức sử dụng chung",
+        "cta": "Quản lý máy in",
+        "online": "Online",
+        "offline": "Offline",
+        "maintenance": "Bảo trì",
+        "utilization": "Sử dụng",
+        "utilizationLabel": "Mức sử dụng hệ thống",
+        "note": ""
+      },
+      "quickActions": {
+        "title": "Lối tắt",
+        "description": "Điều hướng nhanh tới các màn quản trị",
+        "badges": {
+          "realtime": "Thời gian thực"
+        },
+        "items": {
+          "printers": {
+            "title": "Trạng thái máy in",
+            "description": "Kiểm tra on/off/maintenance và điều phối nhanh."
+          },
+          "reports": {
+            "title": "Báo cáo nhanh",
+            "description": "Xuất PDF/CSV jobs và mức sử dụng tuần này."
+          },
+          "logs": {
+            "title": "Nhật ký hệ thống",
+            "description": "Theo dõi lỗi, cảnh báo và lịch sử bảo trì."
+          },
+          "config": {
+            "title": "Cấu hình máy in",
+            "description": "Cập nhật chính sách in, hạn mức, phân quyền."
+          }
+        }
+      },
+      "alerts": {
+        "title": "Cảnh báo",
+        "description": "Mục cần xử lý sớm",
+        "severity": {
+          "info": "Thông tin",
+          "warning": "Cảnh báo",
+          "critical": "Khẩn"
+        },
+        "items": {
+          "lowPaper": {
+            "title": "Giấy A3 thấp tại R305",
+            "time": "10 phút trước",
+            "action": "Bổ sung giấy"
+          },
+          "driverUpdate": {
+            "title": "Driver cần cập nhật cho HP 4100",
+            "time": "35 phút trước",
+            "action": "Xem chi tiết"
+          },
+          "printerOffline": {
+            "title": "Máy in R402 đang offline",
+            "time": "1 giờ trước",
+            "action": "Chuyển job"
+          }
+        }
+      }
+    },
+    "student": {
+      "sectionLabel": "Trang của sinh viên",
+      "greeting": "Xin chào, {{name}}",
+      "subtext": "Kiểm tra số dư, in nhanh và theo dõi gần đây.",
+      "ctaPrimary": "In tài liệu",
+      "ctaSecondary": "Mua thêm trang",
+      "balance": {
+        "title": "Số dư A4",
+        "resetLabel": "Làm mới vào {{date}}",
+        "badge": "Ưu tiên",
+        "conversion": "Quy đổi khổ giấy",
+        "note": "Công việc đang chờ sẽ tự chạy khi máy in sẵn sàng.",
+        "quotaTitle": "Hạn mức được tặng mỗi tháng",
+        "quotaSubtitle": "150 trang A4 / tháng, dùng hết sẽ dùng tới số dư nạp."
+      },
+      "stats": {
+        "jobsThisMonth": "Công việc tháng này",
+        "pagesThisMonth": "Trang đã in",
+        "successRate": "Tỉ lệ thành công",
+        "pending": "Đang chờ",
+        "balance": "Số dư tiền",
+        "availableBalance": "Số dư khả dụng",
+        "changePercent": "{{percent}}% so với tháng trước",
+        "title": "Trang chủ"
+      },
+      "quickActions": {
+        "title": "Thao tác nhanh",
+        "description": "Đi tới tác vụ được dùng nhiều nhất"
+      },
+      "recent": {
+        "title": "In gần đây",
+        "description": "Theo dõi trạng thái mới nhất",
+        "pagesLabel": "{{pages}} trang A4",
+        "viewAll": "Xem lịch sử",
+        "status": {
+          "completed": "Hoàn tất",
+          "pending": "Đang chờ",
+          "failed": "Lỗi"
+        }
+      },
+      "conversions": {
+        "title": "Quy đổi khổ giấy",
+        "description": "Cách tính hạn mức từ A4 sang A3/A5",
+        "label": "{{ratio}} × A4"
+      },
+      "profile": {
+        "title": "Hồ sơ",
+        "description": "Thông tin học tập nhanh",
+        "studentCode": "Mã sinh viên",
+        "major": "Chuyên ngành",
+        "class": "Lớp",
+        "gpaLabel": "GPA",
+        "cta": "Xem hồ sơ"
+      },
+      "achievements": {
+        "title": "Hoạt động",
+        "description": "CLB, giải thưởng, nổi bật"
+      },
+      "highlights": {
+        "title": "Lưu ý nhanh",
+        "description": "Mẹo để in ấn mượt mà"
+      },
+      "tips": {
+        "title": "Mẹo nhanh",
+        "description": "Giữ cho việc in ấn của bạn mượt mà."
+      },
+      "quickActions": {
+        "title": "Thao tác nhanh",
+        "description": "Đi tới tác vụ được dùng nhiều nhất"
+      },
+      "navigation": {
+        "dashboard": "Trang chủ",
+        "print": "In tài liệu",
+        "history": "Lịch sử in",
+        "printers": "Máy in",
+        "profile": "Hồ sơ",
+        "buyPages": "Nạp tiền",
+        "settings": "Cài đặt",
+        "managePrinters": "Quản lý máy in",
+        "manageStudents": "Quản lý sinh viên",
+        "reports": "Báo cáo",
+        "systemLogs": "Nhật ký hệ thống",
+        "configuration": "Cấu hình"
+      }
+    }
+  },
+  "student": {
+    "printers": {
+      "title": "Thông tin máy in",
+      "description": "Xem máy in có sẵn và trạng thái của chúng",
+      "status": {
+        "all": "Tất cả",
+        "online": "Online",
+        "busy": "Đang in",
+        "maintenance": "Bảo trì",
+        "offline": "Offline"
+      },
+      "filters": {
+        "readyOnly": "Chỉ hiển thị máy in sẵn sàng",
+        "colorOnly": "Chỉ máy in màu",
+        "duplexOnly": "Chỉ máy in 2 mặt"
+      },
+      "listTitle": "Danh sách máy in ({{count}})",
+      "noResults": "Không có máy in phù hợp với bộ lọc.",
+      "notices": "Thông báo",
+      "summary": {
+        "total": "Tổng máy in",
+        "online": "Online",
+        "busy": "Đang in"
+      },
+      "jobs": "công việc",
+      "jobsCount": "{{count}} công việc",
+      "yes": "Có",
+      "no": "Không",
+      "features": "Chức năng",
+      "colorPrinting": "In màu:",
+      "duplexPrinting": "In 2 mặt:",
+      "model": "Model",
+      "queue": "Hàng đợi",
+      "queueLabel": "Hàng đợi:",
+      "maxPaperSize": "Khổ giấy tối đa:",
+      "oneSided": "1 mặt",
+      "twoSided": "2 mặt",
+      "color": "In màu",
+      "grayscale": "Xám",
+      "blackWhite": "Đen trắng",
+      "printSide": "Mặt in:",
+      "selectTheme": "Chọn giao diện",
+      "selectLanguage": "Chọn ngôn ngữ",
+      "searchPlaceholder": "Tìm kiếm máy in...",
+      "filterStatus": "Trạng thái",
+      "modalTitle": "Chi tiết máy in",
+      "location": "Vị trí:",
+      "uptime": "Uptime:",
+      "note": "Ghi chú"
+    },
+    "print": {
+      "title": "In tài liệu",
+      "description": "Tải lên và in tài liệu của bạn",
+      "steps": {
+        "upload": "Tải lên",
+        "choosePrinter": "Chọn máy in",
+        "configuration": "Cấu hình",
+        "confirm": "Xác nhận"
+      },
+      "step1": {
+        "title": "Tải lên tài liệu",
+        "description": "Chọn file bạn muốn in. Hỗ trợ PDF, Word, Excel, PowerPoint và hình ảnh",
+        "dragDrop": "Kéo thả file vào đây hoặc click để chọn",
+        "fileSizeLimit": "Tối đa 50MB • PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG",
+        "saveFile": "Lưu file",
+        "next": "Tiếp theo",
+        "fileSaved": "Đã lưu file thành công!",
+        "selectFile": "Chọn file để in",
+        "changeFile": "Đổi file"
+      },
+      "step2": {
+        "title": "Chọn máy in",
+        "description": "Chọn máy in bạn muốn sử dụng để in tài liệu",
+        "choosePrinter": "Chọn máy in",
+        "selectPrinter": "Chọn máy in để in tài liệu của bạn",
+        "search": "Tìm kiếm theo tên, phòng, tòa nhà...",
+        "building": "Tòa nhà",
+        "room": "Phòng",
+        "allBuildings": "Tất cả tòa nhà",
+        "allRooms": "Tất cả phòng",
+        "found": "Tìm thấy",
+        "printers": "máy in",
+        "status": {
+          "online": "Đang hoạt động",
+          "offline": "Offline",
+          "maintenance": "Bảo trì"
+        },
+        "features": {
+          "color": "In màu",
+          "duplex": "2 mặt"
+        },
+        "noResults": "Không tìm thấy máy in nào phù hợp",
+        "back": "Quay lại",
+        "next": "Tiếp theo"
+      },
+      "step3": {
+        "title": "Cấu hình in",
+        "description": "Tùy chỉnh các thiết lập in cho tài liệu của bạn",
+        "paperSize": "Khổ giấy",
+        "orientation": "Hướng giấy",
+        "portrait": "Dọc",
+        "landscape": "Ngang",
+        "printSide": "In mặt",
+        "oneSided": "1 mặt",
+        "doubleSided": "2 mặt",
+        "colorMode": "Chế độ màu",
+        "color": "Màu",
+        "grayscale": "Xám",
+        "blackWhite": "Đen trắng",
+        "numberOfCopies": "Số bản in",
+        "summary": "Tóm tắt",
+        "costCalc": "Tính chi phí",
+        "currentBalance": "Số dư hiện tại",
+        "remainingBalance": "Số dư còn lại",
+        "estimatedPages": "Số trang ước tính",
+        "estimatedCost": "Chi phí ước tính",
+        "notSupported": "Không hỗ trợ",
+        "back": "Quay lại",
+        "next": "Tiếp theo",
+        "selectPaperSize": "Chọn khổ giấy",
+        "selectOrientation": "Chọn hướng giấy",
+        "selectPrintSide": "Chọn mặt in",
+        "selectColorMode": "Chọn chế độ màu"
+      },
+      "step4": {
+        "title": "Xác nhận in",
+        "description": "Vui lòng kiểm tra lại thông tin trước khi xác nhận in",
+        "fileInfo": "Thông tin tài liệu",
+        "selectedPrinter": "Máy in đã chọn",
+        "printConfig": "Cấu hình in",
+        "estimatedCost": "Chi phí ước tính",
+        "costNote": "Chi phí có thể thay đổi tùy theo số trang thực tế của tài liệu",
+        "warning": "Lưu ý quan trọng",
+        "warningMessage": "Vui lòng đảm bảo bạn có đủ số trang in trong tài khoản. Sau khi xác nhận, công việc in sẽ được thêm vào hàng đợi và sẽ được xử lý ngay khi máy in sẵn sàng.",
+        "processing": "Đang xử lý...",
+        "confirm": "Xác nhận in",
+        "back": "Quay lại",
+        "success": "Đã gửi công việc in thành công!",
+        "preview": "Xem trước",
+        "previewTitle": "Xem trước tài liệu",
+        "previewUnavailable": "Chưa thể hiển thị bản xem trước cho loại file này.",
+        "openInNewTab": "Mở trong tab mới",
+        "confirmTitle": "Xác nhận in",
+        "file": "Tài liệu",
+        "printer": "Máy in",
+        "configuration": "Cấu hình",
+        "copies": "bản"
+      },
+      "uploadedFiles": {
+        "title": "Tài liệu đã tải lên",
+        "description": "Các file bạn đã tải lên trước đó",
+        "use": "Sử dụng",
+        "pages": "trang",
+        "prints": "lần in",
+        "searchPlaceholder": "Tìm kiếm theo tên file...",
+        "filters": "Bộ lọc nâng cao",
+        "dateFrom": "Từ ngày",
+        "dateTo": "Đến ngày",
+        "selectedCount": "Đã chọn {{count}} file",
+        "bulkPrint": "In hàng loạt",
+        "bulkDelete": "Xóa hàng loạt",
+        "deselect": "Bỏ chọn",
+        "table": {
+          "fileName": "Tên file",
+          "pages": "Số trang",
+          "uploadedAt": "Ngày tải lên",
+          "lastPrintedAt": "Lần in cuối",
+          "printCount": "Số lần in",
+          "actions": "Thao tác",
+          "print": "In",
+          "delete": "Xóa",
+          "noData": "Không có dữ liệu phù hợp với bộ lọc hiện tại.",
+          "showing": "Hiển thị {{from}} - {{to}} trong tổng số {{total}} file"
+        },
+        "deleteModal": {
+          "title": "Xác nhận xóa file",
+          "message": "Bạn có chắc chắn muốn xóa file \"{{fileName}}\"? Hành động này không thể hoàn tác.",
+          "cancel": "Hủy",
+          "confirm": "Xóa file"
+        },
+        "printModal": {
+          "title": "Xác nhận in lại",
+          "message": "Bạn có muốn in lại file \"{{fileName}}\"? Bạn sẽ được chuyển đến bước chọn máy in.",
+          "cancel": "Hủy",
+          "confirm": "In lại"
+        }
+      }
+    },
+    "history": {
+      "title": "Lịch sử in",
+      "description": "Tìm kiếm, lọc và sắp xếp lịch sử",
+      "jobsThisMonth": "Công việc tháng này",
+      "jobs": "công việc",
+      "pagesPrinted": "Số trang đã in",
+      "successRate": "Tỷ lệ thành công",
+      "noData": "Không có dữ liệu phù hợp với bộ lọc hiện tại.",
+      "recentTitle": "Lịch sử in gần đây",
+      "searchPlaceholder": "Tìm theo tên tài liệu, máy in...",
+      "filterStatus": "Trạng thái",
+      "filterStartDate": "Ngày bắt đầu",
+      "filterEndDate": "Ngày kết thúc",
+      "filterButton": "Bộ lọc",
+      "status": {
+        "completed": "Hoàn tất",
+        "processing": "Đang xử lý",
+        "queued": "Đang chờ",
+        "failed": "Lỗi"
+      },
+      "colorMode": {
+        "color": "In màu",
+        "grayscale": "In xám",
+        "blackWhite": "Đen trắng"
+      },
+      "printSide": {
+        "oneSided": "1 mặt",
+        "twoSided": "2 mặt"
+      },
+      "pages": "trang",
+      "modalTitle": "Chi tiết lịch sử in",
+      "modalPrinter": "Máy in",
+      "modalConfig": "Cấu hình in",
+      "modalPaperSize": "Khổ giấy:",
+      "modalColorMode": "Chế độ màu:",
+      "modalPrintSide": "Mặt in:",
+      "modalCopies": "Số bản:",
+      "modalTotalPages": "Tổng trang:",
+      "modalTime": "Thời gian",
+      "modalSubmitted": "Gửi:",
+      "modalCompleted": "Hoàn tất:"
+    },
+    "buyPages": {
+      "title": "Nạp tiền",
+      "description": "Nạp tiền vào tài khoản bằng ví hoặc thẻ",
+      "totalRecharges": "Tổng nạp",
+      "totalAmount": "Tổng tiền nạp",
+      "totalBonus": "Tổng bonus",
+      "packagesTitle": "Chọn gói nạp tiền",
+      "packagesDescription": "Nạp theo gói để nhận thêm tiền bonus",
+      "customTitle": "Nạp tùy chỉnh",
+      "customDescription": "Nhập số tiền bạn muốn nạp (tối thiểu 10,000₫)",
+      "customPlaceholder": "Nhập số tiền (VND)",
+      "customButton": "Nạp tùy chỉnh",
+      "historyTitle": "Lịch sử nạp tiền",
+      "noHistory": "Chưa có lịch sử nạp tiền",
+      "packageBadge": {
+        "popular": "Phổ biến",
+        "event": "Sự kiện"
+      },
+      "packageTotal": "Tổng:",
+      "selectPackage": "Chọn gói",
+      "customRecharge": "Nạp tùy chỉnh",
+      "paymentModalTitle": "Xác nhận thanh toán",
+      "paymentAmount": "Số tiền nạp",
+      "paymentTotal": "Tổng:",
+      "paymentMethodLabel": "Chọn phương thức thanh toán",
+      "paymentMethod": {
+        "bank": "💳 Bank Transfer",
+        "momo": "📱 MoMo Wallet"
+      },
+      "status": {
+        "completed": "Hoàn tất",
+        "pending": "Đang xử lý",
+        "failed": "Thất bại",
+        "cancelled": "Hủy"
+      }
+    },
+    "profile": {
+      "title": "Hồ sơ",
+      "description": "Quản lý hồ sơ tài khoản của bạn",
+      "editProfile": "Chỉnh sửa hồ sơ",
+      "changePassword": "Đổi mật khẩu",
+      "logOut": "Đăng xuất",
+      "logOutSuccess": "Đăng xuất thành công",
+      "badges": {
+        "student": "Sinh viên",
+        "active": "Hoạt động"
+      },
+      "balance": {
+        "title": "SỐ DƯ",
+        "subtitle": "Số dư khả dụng",
+        "topUp": "Nạp tiền"
+      },
+      "contactInfo": {
+        "title": "THÔNG TIN LIÊN HỆ",
+        "universityEmail": "Email trường",
+        "mobileNumber": "Số điện thoại",
+        "dateOfBirth": "Ngày sinh",
+        "email": "Email",
+        "phone": "Số điện thoại"
+      },
+      "academicDetails": {
+        "title": "THÔNG TIN HỌC TẬP",
+        "studentId": "Mã sinh viên",
+        "faculty": "Khoa",
+        "major": "Chuyên ngành",
+        "academicYear": "Năm học"
+      },
+      "changePasswordModal": {
+        "title": "Đổi mật khẩu",
+        "currentPassword": "Mật khẩu hiện tại",
+        "newPassword": "Mật khẩu mới",
+        "confirmPassword": "Xác nhận mật khẩu mới",
+        "currentPasswordPlaceholder": "Mật khẩu hiện tại",
+        "newPasswordPlaceholder": "Mật khẩu mới",
+        "confirmPasswordPlaceholder": "Xác nhận mật khẩu mới",
+        "submit": "Đổi mật khẩu",
+        "submitting": "Đang xử lý...",
+        "success": "Đổi mật khẩu thành công",
+        "error": "Đã xảy ra lỗi khi đổi mật khẩu",
+        "missingFields": "Vui lòng điền đầy đủ các trường",
+        "mismatch": "Mật khẩu mới và xác nhận không khớp",
+        "weakPassword": "Mật khẩu phải có ít nhất 6 ký tự"
+      },
+      "editProfileModal": {
+        "title": "Chỉnh sửa hồ sơ",
+        "email": "Email",
+        "phone": "Số điện thoại",
+        "fullName": "Họ và tên",
+        "fullNamePlaceholder": "Họ và tên",
+        "phonePlaceholder": "Số điện thoại",
+        "dateOfBirthPlaceholder": "DD/MM/YYYY",
+        "otpCode": "Mã OTP",
+        "sendOtp": "Gửi OTP",
+        "sendingOtp": "Đang gửi...",
+        "otpSent": "Mã OTP đã được gửi đến email của bạn",
+        "verifyOtp": "Xác thực",
+        "verifyingOtp": "Đang xác thực...",
+        "otpVerified": "Xác thực OTP thành công",
+        "submit": "Lưu thay đổi",
+        "submitting": "Đang xử lý...",
+        "success": "Cập nhật thông tin thành công",
+        "error": "Không thể cập nhật thông tin",
+        "invalidOtp": "Mã OTP không hợp lệ",
+        "emailChanged": "Email đã thay đổi. Vui lòng xác thực bằng mã OTP."
+      }
+    },
+    "settings": {
+      "title": "Cài đặt",
+      "description": "Quản lý tài khoản và cài đặt ứng dụng",
+      "appearance": {
+        "title": "Giao diện",
+        "description": "Chọn cách hiển thị bảng điều khiển trên thiết bị của bạn.",
+        "lightTitle": "Chế độ sáng",
+        "lightDescription": "Nền sáng, độ tương phản cao phù hợp khi làm việc ban ngày.",
+        "darkTitle": "Chế độ tối",
+        "darkDescription": "Giao diện dịu mắt khi sử dụng ban đêm hoặc môi trường thiếu sáng.",
+        "activeLabel": "Đang dùng",
+        "systemTitle": "Hệ thống",
+        "systemDescription": "Chọn chế độ hiển thị theo hệ thống."
+      },
+      "language": {
+        "title": "Ngôn ngữ",
+        "description": "Chọn ngôn ngữ hiển thị cho ứng dụng.",
+        "englishTitle": "Tiếng Anh",
+        "englishDescription": "Sử dụng tiếng Anh làm ngôn ngữ giao diện.",
+        "vietnameseTitle": "Tiếng Việt",
+        "vietnameseDescription": "Sử dụng tiếng Việt làm ngôn ngữ giao diện.",
+        "activeLabel": "Đang dùng"
+      },
+      "dockPosition": {
+        "title": "Vị trí App Dock",
+        "description": "Chọn vị trí hiển thị thanh điều hướng ứng dụng.",
+        "leftTitle": "Bên trái",
+        "leftDescription": "Hiển thị dock ở cạnh trái màn hình.",
+        "rightTitle": "Bên phải",
+        "rightDescription": "Hiển thị dock ở cạnh phải màn hình.",
+        "bottomTitle": "Dưới cùng",
+        "bottomDescription": "Hiển thị dock ở dưới cùng màn hình (mặc định).",
+        "activeLabel": "Đang dùng"
+      },
+      "musicPlayer": {
+        "title": "Nhạc nền Giáng sinh",
+        "description": "Phát nhạc nền với chủ đề Giáng sinh trong khi làm việc.",
+        "nowPlaying": "Danh sách phát",
+        "volume": "Âm lượng",
+        "play": "Phát",
+        "pause": "Tạm dừng",
+        "next": "Bài tiếp",
+        "previous": "Bài trước",
+        "autoPlay": "Tự động phát nhạc",
+        "autoPlayDescription": "Tự động phát nhạc khi vào trang"
+      },
+      "notifications": {
+        "title": "Thông báo",
+        "push": "Thông báo đẩy",
+        "pushDescription": "Nhận thông báo đẩy cho công việc in",
+        "email": "Cảnh báo email",
+        "emailDescription": "Nhận cảnh báo email khi hoàn thành in"
+      },
+      "account": {
+        "title": "Tài khoản",
+        "changePassword": "Đổi mật khẩu",
+        "editProfile": "Chỉnh sửa hồ sơ"
+      },
+      "about": {
+        "title": "Giới thiệu",
+        "version": "Phiên bản",
+        "build": "Bản dựng"
+      }
+    }
+  },
+  "staff": {
+    "managePrinters": {
+      "title": "Quản lý máy in",
+      "description": "Quản lý và theo dõi tất cả máy in trong hệ thống",
+      "stats": {
+        "totalBrands": "Tổng số hãng",
+        "totalModels": "Tổng số model",
+        "totalPrinters": "Tổng máy in",
+        "activePrinters": "Đang hoạt động",
+        "maintenancePrinters": "Đang bảo trì",
+        "needsMaintenance": "Cần bảo trì"
+      },
+      "tabs": {
+        "brands": "Hãng máy in",
+        "models": "Model máy in",
+        "printers": "Máy in vật lý",
+        "activity": "Lịch sử hoạt động"
+      },
+      "comingSoon": {
+        "brands": "Tính năng quản lý thương hiệu sẽ được triển khai sau.",
+        "models": "Tính năng quản lý model sẽ được triển khai sau.",
+        "activity": "Tính năng hoạt động sẽ được triển khai sau."
+      },
+      "modalInfo": "Thông tin",
+      "search": {
+        "placeholder": "Tìm kiếm...",
+        "advancedFilters": "Bộ lọc nâng cao",
+        "hideFilters": "Ẩn bộ lọc"
+      },
+      "actions": {
+        "importExcel": "Nhập Excel",
+        "exportExcel": "Xuất Excel",
+        "addNew": "Thêm mới",
+        "edit": "Sửa",
+        "delete": "Xóa",
+        "enable": "Bật",
+        "disable": "Tắt",
+        "viewDetails": "Xem chi tiết"
+      },
+      "filters": {
+        "status": "Trạng thái",
+        "brand": "Hãng",
+        "room": "Phòng",
+        "fromDate": "Từ ngày",
+        "toDate": "Đến ngày",
+        "actionType": "Loại hành động",
+        "performedBy": "Thực hiện bởi",
+        "paperSize": "Khổ giấy",
+        "features": "Tính năng",
+        "countryOfOrigin": "Xuất xứ",
+        "all": "Tất cả",
+        "enabled": "Đang hoạt động",
+        "disabled": "Đang bảo trì",
+        "color": "In màu",
+        "duplex": "In 2 mặt",
+        "clearFilters": "Xóa bộ lọc",
+        "selectStartDate": "Chọn ngày bắt đầu",
+        "selectEndDate": "Chọn ngày kết thúc"
+      },
+      "table": {
+        "brandName": "Tên hãng",
+        "countryOfOrigin": "Xuất xứ",
+        "website": "Website",
+        "createdAt": "Ngày tạo",
+        "modelName": "Tên model",
+        "description": "Mô tả",
+        "maxPaperSize": "Khổ giấy tối đa",
+        "features": "Tính năng",
+        "serialNumber": "Serial Number",
+        "brandModel": "Hãng / Model",
+        "room": "Phòng",
+        "status": "Trạng thái",
+        "installedDate": "Ngày lắp đặt",
+        "lastMaintenance": "Bảo trì gần nhất",
+        "actionType": "Loại hành động",
+        "performedBy": "Thực hiện bởi",
+        "details": "Chi tiết",
+        "time": "Thời gian",
+        "actions": "Thao tác",
+        "noData": "Không có dữ liệu",
+        "loading": "Đang tải dữ liệu...",
+        "color": "Màu",
+        "duplex": "2 mặt",
+        "active": "Đang hoạt động",
+        "underMaintenance": "Đang bảo trì"
+      },
+      "bulkActions": {
+        "selected": "Đã chọn {{count}} mục",
+        "enable": "Kích hoạt",
+        "disable": "Vô hiệu hóa",
+        "deselect": "Bỏ chọn"
+      },
+      "pagination": {
+        "showing": "Hiển thị",
+        "to": "-",
+        "of": "trong tổng số",
+        "items": "mục"
+      },
+      "actionTypes": {
+        "added": "Thêm mới",
+        "enabled": "Kích hoạt",
+        "disabled": "Vô hiệu hóa",
+        "updated": "Cập nhật",
+        "removed": "Xóa",
+        "maintenance": "Bảo trì"
+      },
+      "maintenance": {
+        "alertTitle": "Cảnh báo bảo trì",
+        "alertMessage": "Có {{count}} máy in cần được bảo trì (quá 3 tháng kể từ lần bảo trì gần nhất)",
+        "daysAgo": "{{days}} ngày trước - Cần bảo trì"
+      },
+      "deleteModal": {
+        "deleteBrand": "Xóa Hãng",
+        "deleteModel": "Xóa Model",
+        "deletePrinter": "Xóa Máy In",
+        "confirmDeleteBrand": "Bạn có chắc chắn muốn xóa hãng này?",
+        "confirmDeleteModel": "Bạn có chắc chắn muốn xóa model này?",
+        "confirmDeletePrinter": "Bạn có chắc chắn muốn xóa máy in này?"
+      },
+      "listTitle": "Danh sách máy in ({{count}})",
+      "noResults": "Không có máy in phù hợp."
+    },
+    "manageStudents": {
+      "title": "Quản lý sinh viên",
+      "description": "Xem và quản lý tài khoản sinh viên",
+      "noResults": "Không có sinh viên phù hợp với bộ lọc.",
+      "searchPlaceholder": "Tìm kiếm sinh viên...",
+      "summary": {
+        "total": "Tổng sinh viên",
+        "active": "Đang hoạt động",
+        "suspended": "Tạm dừng",
+        "graduated": "Đã tốt nghiệp"
+      },
+      "filterYear": "Năm học",
+      "filterYearAll": "Tất cả năm",
+      "filterYear1": "Năm 1",
+      "filterYear2": "Năm 2",
+      "filterYear3": "Năm 3",
+      "filterYear4": "Năm 4",
+      "showFilters": "Hiện bộ lọc",
+      "hideFilters": "Ẩn bộ lọc",
+      "listTitle": "Danh sách sinh viên ({{count}})",
+      "modalTitle": "Chi tiết sinh viên",
+      "modalContact": "Thông tin liên hệ",
+      "modalAcademic": "Thông tin học tập",
+      "modalYear": "Năm học:",
+      "modalYearLabel": "Năm {{year}}",
+      "previous": "Trước"
+    },
+    "systemLogs": {
+      "title": "Nhật ký hệ thống",
+      "description": "Xem hoạt động và nhật ký hệ thống",
+      "noResults": "Không có logs phù hợp với bộ lọc.",
+      "total": "Tổng logs",
+      "today": "Hôm nay",
+      "thisWeek": "Tuần này",
+      "thisMonth": "Tháng này",
+      "filterActionType": "Loại hành động",
+      "filterActionTypeAll": "Tất cả hành động",
+      "previous": "Trước",
+      "modalUserInfo": "Thông tin người dùng",
+      "modalName": "Tên:",
+      "modalAction": "Hành động",
+      "modalFieldChanged": "Trường thay đổi:",
+      "modalTechnicalInfo": "Thông tin kỹ thuật"
+    },
+    "reports": {
+      "title": "Báo cáo",
+      "description": "Xem và tạo báo cáo hệ thống",
+      "totalPrintJobs": "Tổng công việc in",
+      "totalPagesPrinted": "Tổng trang in",
+      "totalRevenue": "Tổng doanh thu",
+      "successRate": "Tỷ lệ thành công",
+      "statusDistribution": "Phân bố trạng thái in",
+      "jobs": "công việc",
+      "pages": "trang",
+      "success": "thành công",
+      "dateRange": {
+        "7days": "7 ngày qua",
+        "30days": "30 ngày qua",
+        "90days": "90 ngày qua",
+        "custom": "Tùy chỉnh",
+        "placeholder": "Chọn khoảng thời gian"
+      }
+    },
+    "configuration": {
+      "title": "Cấu hình",
+      "description": "Quản lý cài đặt và cấu hình hệ thống",
+      "filterAllCategories": "Tất cả danh mục",
+      "filterCategory": "Chọn danh mục",
+      "save": "Lưu",
+      "saving": "Đang lưu..."
+    },
+    "settings": {
+      "title": "Cài đặt",
+      "description": "Quản lý tài khoản và cài đặt ứng dụng",
+      "comingSoon": "Các mục cài đặt khác sẽ sớm xuất hiện tại đây.",
+      "appearance": {
+        "title": "Giao diện",
+        "description": "Chọn cách hiển thị bảng điều khiển trên thiết bị của bạn.",
+        "lightTitle": "Chế độ sáng",
+        "lightDescription": "Nền sáng, độ tương phản cao phù hợp khi làm việc ban ngày.",
+        "darkTitle": "Chế độ tối",
+        "darkDescription": "Giao diện dịu mắt khi sử dụng ban đêm hoặc môi trường thiếu sáng.",
+        "activeLabel": "Đang dùng"
+      },
+      "language": {
+        "title": "Ngôn ngữ",
+        "description": "Chọn ngôn ngữ hiển thị cho ứng dụng.",
+        "englishTitle": "Tiếng Anh",
+        "englishDescription": "Sử dụng tiếng Anh làm ngôn ngữ giao diện.",
+        "vietnameseTitle": "Tiếng Việt",
+        "vietnameseDescription": "Sử dụng tiếng Việt làm ngôn ngữ giao diện.",
+        "activeLabel": "Đang dùng"
+      },
+      "dockPosition": {
+        "title": "Vị trí App Dock",
+        "description": "Chọn vị trí hiển thị thanh điều hướng ứng dụng.",
+        "leftTitle": "Bên trái",
+        "leftDescription": "Hiển thị dock ở cạnh trái màn hình.",
+        "rightTitle": "Bên phải",
+        "rightDescription": "Hiển thị dock ở cạnh phải màn hình.",
+        "bottomTitle": "Dưới cùng",
+        "bottomDescription": "Hiển thị dock ở dưới cùng màn hình (mặc định).",
+        "activeLabel": "Đang dùng"
+      },
+      "musicPlayer": {
+        "title": "Nhạc nền Giáng sinh",
+        "description": "Phát nhạc nền với chủ đề Giáng sinh trong khi làm việc.",
+        "nowPlaying": "Danh sách phát",
+        "volume": "Âm lượng",
+        "play": "Phát",
+        "pause": "Tạm dừng",
+        "next": "Bài tiếp",
+        "previous": "Bài trước",
+        "autoPlay": "Tự động phát nhạc",
+        "autoPlayDescription": "Tự động phát nhạc khi vào trang"
+      }
+    }
+  }
+}

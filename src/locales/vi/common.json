@@ -1,0 +1,24 @@
+{
+  "common": {
+    "welcome": "Chào mừng",
+    "loading": "Đang tải...",
+    "error": "Lỗi",
+    "success": "Thành công",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "save": "Lưu",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "create": "Tạo mới",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "reset": "Đặt lại"
+  },
+  "validation": {
+    "required": "Trường này là bắt buộc",
+    "email": "Địa chỉ email không hợp lệ",
+    "minLength": "Tối thiểu {{min}} ký tự",
+    "maxLength": "Tối đa {{max}} ký tự"
+  }
+}
+
