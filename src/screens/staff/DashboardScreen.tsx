@@ -4,8 +4,12 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { StaffTabParamList } from '../../navigation/types';
 import { colors, spacing, borderRadius, typography } from '../../theme';
 import { useTheme } from '../../lib/hooks/useTheme';
 import {
@@ -17,17 +21,47 @@ import {
 } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { CountUp } from '../../components/ui/CountUp';
-import {
-  statWidgets,
-  weeklyPrintingActivity,
-  paperSizeUsage,
-  printerStatusSummary,
-  alerts,
-} from '../../data/staffDashboardMock';
+import { usePrinterStats } from '../../lib/api/services/dashboard';
+import { alerts } from '../../data/staffDashboardMock';
+
+type NavigationProp = NativeStackNavigationProp<StaffTabParamList>;
 
 export const StaffDashboardScreen: React.FC = () => {
   const { theme } = useTheme();
   const themeColors = colors[theme];
+  const navigation = useNavigation<NavigationProp>();
+  
+  // API calls
+  const { data: statsData, isLoading } = usePrinterStats();
+  const stats = statsData?.data;
+
+  // Create stat widgets from API data
+  const statWidgets = React.useMemo(() => {
+    if (!stats) return [];
+    return [
+      {
+        id: 'printersOnline' as const,
+        value: stats.onlinePrinters || 0,
+        change: '',
+        trend: 'flat' as const,
+        captionKey: 'total' as const,
+      },
+      {
+        id: 'jobsToday' as const,
+        value: stats.jobsToday || 0,
+        change: stats.jobsChange ? `${stats.jobsChange > 0 ? '+' : ''}${stats.jobsChange} jobs` : '',
+        trend: (stats.jobsChange && stats.jobsChange > 0 ? 'up' : stats.jobsChange && stats.jobsChange < 0 ? 'down' : 'flat') as 'up' | 'down' | 'flat',
+        captionKey: 'lastJob' as const,
+      },
+      {
+        id: 'pagesMonth' as const,
+        value: stats.pagesThisMonth || 0,
+        change: stats.pagesChange ? `${stats.pagesChange > 0 ? '+' : ''}${stats.pagesChange}%` : '',
+        trend: (stats.pagesChange && stats.pagesChange > 0 ? 'up' : stats.pagesChange && stats.pagesChange < 0 ? 'down' : 'flat') as 'up' | 'down' | 'flat',
+        captionKey: undefined,
+      },
+    ];
+  }, [stats]);
 
   const getTrendColor = (trend: 'up' | 'down' | 'flat') => {
     switch (trend) {
@@ -170,7 +204,7 @@ export const StaffDashboardScreen: React.FC = () => {
                     ]}
                   >
                     {stat.captionKey === 'total'
-                      ? `Out of ${printerStatusSummary.online + printerStatusSummary.offline + printerStatusSummary.maintenance}`
+                      ? `Out of ${(stats?.onlinePrinters || 0) + (stats?.offlinePrinters || 0) + (stats?.maintenancePrinters || 0)}`
                       : 'Last job finished 6m ago'}
                   </Text>
                 )}
@@ -204,7 +238,7 @@ export const StaffDashboardScreen: React.FC = () => {
           </CardHeader>
           <CardContent>
             <View style={styles.weeklyActivityContainer}>
-              {weeklyPrintingActivity.map((day, index) => (
+              {[].map((day, index) => (
                 <View key={index} style={styles.weeklyDay}>
                   <Text
                     style={[
@@ -269,7 +303,7 @@ export const StaffDashboardScreen: React.FC = () => {
           </CardHeader>
           <CardContent>
             <View style={styles.paperSizeContainer}>
-              {paperSizeUsage.map((paper, index) => (
+              {[].map((paper, index) => (
                 <View key={index} style={styles.paperSizeItem}>
                   <View
                     style={[
@@ -362,7 +396,7 @@ export const StaffDashboardScreen: React.FC = () => {
                       { color: '#22c55e' },
                     ]}
                   >
-                    <CountUp to={printerStatusSummary.online} />
+                    <CountUp to={stats?.onlinePrinters || 0} />
                   </Text>
                 </View>
                 <View
@@ -391,7 +425,7 @@ export const StaffDashboardScreen: React.FC = () => {
                       { color: '#ef4444' },
                     ]}
                   >
-                    <CountUp to={printerStatusSummary.offline} />
+                    <CountUp to={stats?.offlinePrinters || 0} />
                   </Text>
                 </View>
                 <View
@@ -420,7 +454,7 @@ export const StaffDashboardScreen: React.FC = () => {
                       { color: '#f59e0b' },
                     ]}
                   >
-                    <CountUp to={printerStatusSummary.maintenance} />
+                    <CountUp to={stats?.maintenancePrinters || 0} />
                   </Text>
                 </View>
                 <View
@@ -449,7 +483,7 @@ export const StaffDashboardScreen: React.FC = () => {
                       { color: themeColors.foreground },
                     ]}
                   >
-                    <CountUp to={printerStatusSummary.utilization} />%
+                    <CountUp to={stats?.utilizationRate || 0} />%
                   </Text>
                 </View>
               </View>
@@ -459,7 +493,7 @@ export const StaffDashboardScreen: React.FC = () => {
                     style={[
                       styles.utilizationProgressFill,
                       {
-                        width: `${printerStatusSummary.utilization}%`,
+                        width: `${stats?.utilizationRate || 0}%`,
                       },
                     ]}
                   />
@@ -507,80 +541,96 @@ export const StaffDashboardScreen: React.FC = () => {
                 </Text>
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              {alerts.slice(0, 2).map(alert => {
-                const severityStyle = getSeverityColor(alert.severity);
-                return (
-                  <View
-                    key={alert.id}
-                    style={[
-                      styles.alertItem,
-                      {
-                        backgroundColor: severityStyle.bg,
-                        borderColor: severityStyle.border,
-                      },
-                    ]}
-                  >
-                    <View style={styles.alertHeader}>
+            <CardContent style={styles.alertCardContent}>
+              <ScrollView
+                style={styles.alertScrollView}
+                contentContainerStyle={styles.alertScrollContent}
+                showsVerticalScrollIndicator={true}
+                nestedScrollEnabled={true}
+              >
+                {alerts.map(alert => {
+                  const severityStyle = getSeverityColor(alert.severity);
+                  return (
+                    <View
+                      key={alert.id}
+                      style={[
+                        styles.alertItem,
+                        {
+                          backgroundColor: severityStyle.bg,
+                          borderColor: severityStyle.border,
+                        },
+                      ]}
+                    >
+                      <View style={styles.alertHeader}>
+                        <Text
+                          style={[
+                            styles.alertTitle,
+                            { color: themeColors.foreground },
+                          ]}
+                        >
+                          {alert.id === 'lowPaper'
+                            ? 'A3 paper is low at R305'
+                            : alert.id === 'driverUpdate'
+                              ? 'Driver update needed for HP 4100'
+                              : 'Printer R402 is offline'}
+                        </Text>
+                        <View
+                          style={[
+                            styles.alertBadge,
+                            {
+                              backgroundColor: severityStyle.bg,
+                              borderColor: severityStyle.border,
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.alertBadgeText,
+                              { color: severityStyle.text },
+                            ]}
+                          >
+                            {getSeverityLabel(alert.severity)}
+                          </Text>
+                        </View>
+                      </View>
                       <Text
                         style={[
-                          styles.alertTitle,
-                          { color: themeColors.foreground },
+                          styles.alertTime,
+                          { color: themeColors['muted-foreground'] },
                         ]}
                       >
                         {alert.id === 'lowPaper'
-                          ? 'A3 paper is low at R305'
+                          ? '10 minutes ago'
                           : alert.id === 'driverUpdate'
-                            ? 'Driver update needed for HP 4100'
-                            : 'Printer R402 is offline'}
+                            ? '35 minutes ago'
+                            : '1 hour ago'}
                       </Text>
-                      <View
-                        style={[
-                          styles.alertBadge,
-                          {
-                            backgroundColor: severityStyle.bg,
-                            borderColor: severityStyle.border,
-                          },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.alertBadgeText,
-                            { color: severityStyle.text },
-                          ]}
-                        >
-                          {getSeverityLabel(alert.severity)}
-                        </Text>
-                      </View>
+                      <Button
+                        title={
+                          alert.id === 'lowPaper'
+                            ? 'Refill paper'
+                            : alert.id === 'driverUpdate'
+                              ? 'View details'
+                              : 'Reroute jobs'
+                        }
+                        onPress={() => {
+                          // Navigate to appropriate screen based on alert type
+                          if (alert.id === 'lowPaper') {
+                            navigation.navigate('StaffManagePrinters');
+                          } else if (alert.id === 'driverUpdate') {
+                            navigation.navigate('StaffConfiguration');
+                          } else {
+                            navigation.navigate('StaffManagePrinters');
+                          }
+                        }}
+                        variant="secondary"
+                        size="sm"
+                        style={styles.alertButton}
+                      />
                     </View>
-                    <Text
-                      style={[
-                        styles.alertTime,
-                        { color: themeColors['muted-foreground'] },
-                      ]}
-                    >
-                      {alert.id === 'lowPaper'
-                        ? '10 minutes ago'
-                        : alert.id === 'driverUpdate'
-                          ? '35 minutes ago'
-                          : '1 hour ago'}
-                    </Text>
-                    <Button
-                      title={
-                        alert.id === 'lowPaper'
-                          ? 'Refill paper'
-                          : alert.id === 'driverUpdate'
-                            ? 'View details'
-                            : 'Reroute jobs'
-                      }
-                      onPress={() => {}}
-                      variant="secondary"
-                      size="sm"
-                      style={styles.alertButton}
-                    />
-                  </View>
-                );
-              })}
+                  );
+                })}
+              </ScrollView>
             </CardContent>
           </Card>
         </View>
@@ -786,6 +836,16 @@ const styles = StyleSheet.create({
   alertsCard: {
     flex: 1,
     minWidth: '48%',
+  },
+  alertCardContent: {
+    maxHeight: 350,
+    flex: 1,
+  },
+  alertScrollView: {
+    flex: 1,
+  },
+  alertScrollContent: {
+    paddingBottom: spacing.xs,
   },
   alertItem: {
     padding: spacing.md,

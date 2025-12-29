@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius, typography } from '../../theme';
@@ -16,7 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
 import { Modal } from '../../components/ui/Modal';
-import { printerInfoList, PrinterInfoMock, PrinterStatus } from '../../data/printersInfoMock';
+import { usePrinters } from '../../lib/api/services/printers';
+import type { PrinterResponse } from '../../types/api';
 
 type TabType = 'printers' | 'brands' | 'models' | 'activity';
 
@@ -26,19 +28,22 @@ export const ManagePrintersScreen: React.FC = () => {
   const themeColors = colors[theme];
   const [activeTab, setActiveTab] = useState<TabType>('printers');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPrinter, setSelectedPrinter] = useState<PrinterInfoMock | null>(null);
+  const [selectedPrinter, setSelectedPrinter] = useState<PrinterResponse | null>(null);
+  const [page, setPage] = useState(0);
 
-  const filteredPrinters = printerInfoList.filter(printer => {
-    const normalized = searchQuery.trim().toLowerCase();
-    return (
-      normalized.length === 0 ||
-      printer.name.toLowerCase().includes(normalized) ||
-      printer.brand.toLowerCase().includes(normalized) ||
-      printer.model.toLowerCase().includes(normalized)
-    );
+  // API calls
+  const { data: printersData, isLoading } = usePrinters({
+    page,
+    limit: 50,
+    keyword: searchQuery || undefined,
   });
 
-  const getStatusStyle = (status: PrinterStatus) => {
+  const printers = printersData?.data || [];
+  const filteredPrinters = useMemo(() => {
+    return printers;
+  }, [printers]);
+
+  const getStatusStyle = (status: string) => {
     switch (status) {
       case 'online':
         return {
@@ -63,7 +68,7 @@ export const ManagePrintersScreen: React.FC = () => {
     }
   };
 
-  const getStatusLabel = (status: PrinterStatus) => {
+  const getStatusLabel = (status: string) => {
     switch (status) {
       case 'busy':
         return 'Đang in';
@@ -205,9 +210,10 @@ export const ManagePrintersScreen: React.FC = () => {
                 ) : (
                   <FlatList
                     data={filteredPrinters}
-                    keyExtractor={item => item.id}
+                    keyExtractor={item => item.printerId}
                     renderItem={({ item }) => {
-                      const statusStyle = getStatusStyle(item.status);
+                      const displayStatus = item.isEnabled ? 'online' : 'offline';
+                      const statusStyle = getStatusStyle(displayStatus);
                       return (
                         <TouchableOpacity
                           style={[
@@ -229,7 +235,7 @@ export const ManagePrintersScreen: React.FC = () => {
                                 { color: themeColors.foreground },
                               ]}
                             >
-                              {item.name}
+                              {item.brandName} {item.modelName}
                             </Text>
                             <Text
                               style={[
@@ -237,7 +243,7 @@ export const ManagePrintersScreen: React.FC = () => {
                                 { color: themeColors['muted-foreground'] },
                               ]}
                             >
-                              {item.brand} {item.model}
+                              {item.serialNumber}
                             </Text>
                             <Text
                               style={[
@@ -245,7 +251,7 @@ export const ManagePrintersScreen: React.FC = () => {
                                 { color: themeColors['muted-foreground'] },
                               ]}
                             >
-                              {item.building} • {item.room} • {item.floor}
+                              {item.buildingCode} • {item.roomCode}
                             </Text>
                           </View>
                           <View
@@ -260,7 +266,7 @@ export const ManagePrintersScreen: React.FC = () => {
                                 { color: statusStyle.text },
                               ]}
                             >
-                              {getStatusLabel(item.status)}
+                              {getStatusLabel(displayStatus)}
                             </Text>
                           </View>
                         </TouchableOpacity>
@@ -334,7 +340,7 @@ export const ManagePrintersScreen: React.FC = () => {
                 { color: themeColors.foreground },
               ]}
             >
-              {selectedPrinter.name}
+              {selectedPrinter.brandName} {selectedPrinter.modelName}
             </Text>
             <Text
               style={[
@@ -342,7 +348,7 @@ export const ManagePrintersScreen: React.FC = () => {
                 { color: themeColors['muted-foreground'] },
               ]}
             >
-              {selectedPrinter.brand} {selectedPrinter.model}
+              {selectedPrinter.serialNumber}
             </Text>
 
             <View style={styles.modalSection}>
@@ -369,7 +375,7 @@ export const ManagePrintersScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selectedPrinter.serial}
+                  {selectedPrinter.serialNumber}
                 </Text>
               </View>
               <View style={styles.modalInfoRow}>
@@ -387,7 +393,7 @@ export const ManagePrintersScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selectedPrinter.ipAddress}
+                  {selectedPrinter.ipAddress || '-'}
                 </Text>
               </View>
               <View style={styles.modalInfoRow}>
@@ -405,8 +411,7 @@ export const ManagePrintersScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selectedPrinter.building} • {selectedPrinter.room} •{' '}
-                  {selectedPrinter.floor}
+                  {selectedPrinter.buildingCode} • {selectedPrinter.roomCode}
                 </Text>
               </View>
             </View>

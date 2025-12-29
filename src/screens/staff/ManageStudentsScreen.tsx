@@ -7,6 +7,7 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius, typography } from '../../theme';
@@ -19,16 +20,12 @@ import { DatePicker } from '../../components/ui/DatePicker';
 import { Modal } from '../../components/ui/Modal';
 import { CountUp } from '../../components/ui/CountUp';
 import { SummaryCard } from '../../components/ui/SummaryCard';
-import {
-  studentsMockData,
-  studentStats,
-  studentFilters,
-  StudentItem,
-  StudentStatus,
-} from '../../data/studentsMock';
+import { useUsers } from '../../lib/api/services/users';
+import type { UserResponse } from '../../types/api';
+import type { StudentStatus } from '../../data/studentsMock';
 import { format } from 'date-fns';
 
-type StatusFilterValue = 'all' | StudentStatus;
+type StatusFilterValue = 'all' | 'active' | 'inactive';
 
 const statusBadgeClass: Record<StudentStatus, string> = {
   active: 'bg-emerald-100 text-emerald-700',
@@ -54,48 +51,36 @@ export const ManageStudentsScreen: React.FC = () => {
   const [yearLevel, setYearLevel] = useState<string>('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [selected, setSelected] = useState<StudentItem | null>(null);
-  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<UserResponse | null>(null);
+  const [page, setPage] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
   const PAGE_SIZE = 10;
 
-  const filtered = useMemo(() => {
-    return studentsMockData.filter(student => {
-      const matchesSearch =
-        search.length === 0 ||
-        student.fullName.toLowerCase().includes(search.toLowerCase()) ||
-        student.studentCode.toLowerCase().includes(search.toLowerCase()) ||
-        student.email.toLowerCase().includes(search.toLowerCase());
+  // API calls
+  const { data: usersData, isLoading } = useUsers({
+    page,
+    limit: PAGE_SIZE,
+    search: search || undefined,
+    userType: 'student',
+    isActive: status === 'all' ? undefined : status === 'active',
+  });
 
-      const matchesFaculty = !faculty || faculty === 'all' || student.faculty === faculty;
-      const matchesStatus = status === 'all' || student.status === status;
-      const matchesYearLevel =
-        yearLevel === 'all' || student.yearLevel.toString() === yearLevel;
+  const users = usersData?.data || [];
+  const pagination = usersData?.pagination;
+  const totalPages = pagination?.totalPages || 0;
 
-      const enrollment = new Date(student.enrollmentDate);
-      const start = startDate ? new Date(startDate) : null;
-      const end = endDate ? new Date(endDate) : null;
-      const endInclusive = end ? new Date(end) : null;
-      if (endInclusive) endInclusive.setHours(23, 59, 59, 999);
-      const matchesTime =
-        (!start || enrollment >= start) &&
-        (!endInclusive || enrollment <= endInclusive);
-
-      return (
-        matchesSearch &&
-        matchesFaculty &&
-        matchesStatus &&
-        matchesYearLevel &&
-        matchesTime
-      );
-    });
-  }, [search, faculty, status, yearLevel, startDate, endDate]);
-
-  const paginated = useMemo(() => {
-    return filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  }, [filtered, page]);
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  // Calculate stats from API data
+  const studentStats = useMemo(() => {
+    const total = pagination?.totalItems || 0;
+    const active = users.filter(u => u.isActive).length;
+    const suspended = users.filter(u => !u.isActive).length;
+    return [
+      { label: 'Tổng sinh viên', value: total, delta: '+0' },
+      { label: 'Đang hoạt động', value: active, delta: '+0' },
+      { label: 'Tạm dừng', value: suspended, delta: '+0' },
+      { label: 'Tốt nghiệp', value: 0, delta: '+0' },
+    ];
+  }, [users, pagination]);
 
   return (
     <SafeAreaView
@@ -200,10 +185,7 @@ export const ManageStudentsScreen: React.FC = () => {
                   onChange={setFaculty}
                   options={[
                     { label: 'Tất cả khoa', value: 'all' },
-                    ...studentFilters.faculties.map(f => ({
-                      label: f,
-                      value: f,
-                    })),
+                    // Faculties will be loaded from API if needed
                   ]}
                   placeholder="Khoa"
                   style={styles.filterItem}
@@ -213,10 +195,8 @@ export const ManageStudentsScreen: React.FC = () => {
                   onChange={setStatus}
                   options={[
                     { label: 'Tất cả trạng thái', value: 'all' },
-                    ...studentFilters.statuses.map(s => ({
-                      label: statusLabel[s],
-                      value: s,
-                    })),
+                    { label: 'Đang hoạt động', value: 'active' },
+                    { label: 'Tạm dừng', value: 'inactive' },
                   ]}
                   placeholder="Trạng thái"
                   style={styles.filterItem}
@@ -268,12 +248,16 @@ export const ManageStudentsScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                {t('staff.manageStudents.listTitle', { count: filtered.length })}
+                {t('staff.manageStudents.listTitle', { count: pagination?.totalItems || 0 })}
               </Text>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {paginated.length === 0 ? (
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={themeColors.primary} />
+              </View>
+            ) : users.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text
                   style={[
@@ -286,8 +270,8 @@ export const ManageStudentsScreen: React.FC = () => {
               </View>
             ) : (
               <FlatList
-                data={paginated}
-                keyExtractor={item => item.id}
+                data={users}
+                keyExtractor={item => item.userId}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={[
@@ -317,7 +301,7 @@ export const ManageStudentsScreen: React.FC = () => {
                           { color: themeColors['muted-foreground'] },
                         ]}
                       >
-                        {item.studentCode}
+                        {item.userId.slice(0, 8)}
                       </Text>
                       <Text
                         style={[
@@ -334,7 +318,7 @@ export const ManageStudentsScreen: React.FC = () => {
                             { color: themeColors['muted-foreground'] },
                           ]}
                         >
-                          {item.faculty} • {t('staff.manageStudents.modalYearLabel', { year: item.yearLevel })}
+                          {item.userType === 'student' ? 'Sinh viên' : 'Nhân viên'}
                         </Text>
                       </View>
                     </View>
@@ -344,26 +328,12 @@ export const ManageStudentsScreen: React.FC = () => {
                         {
                           backgroundColor:
                             theme === 'dark'
-                              ? statusBadgeClass[item.status].split(' ')[0] ===
-                                  'bg-emerald-100'
+                              ? item.isActive
                                 ? 'rgba(34, 197, 94, 0.15)'
-                                : statusBadgeClass[item.status].split(' ')[0] ===
-                                    'bg-blue-100'
-                                  ? 'rgba(59, 130, 246, 0.15)'
-                                  : statusBadgeClass[item.status].split(' ')[0] ===
-                                      'bg-amber-100'
-                                    ? 'rgba(251, 191, 36, 0.15)'
-                                    : 'rgba(239, 68, 68, 0.15)'
-                              : statusBadgeClass[item.status].split(' ')[0] ===
-                                  'bg-emerald-100'
+                                : 'rgba(251, 191, 36, 0.15)'
+                              : item.isActive
                                 ? 'rgba(34, 197, 94, 0.1)'
-                                : statusBadgeClass[item.status].split(' ')[0] ===
-                                    'bg-blue-100'
-                                  ? 'rgba(59, 130, 246, 0.1)'
-                                  : statusBadgeClass[item.status].split(' ')[0] ===
-                                      'bg-amber-100'
-                                    ? 'rgba(251, 191, 36, 0.1)'
-                                    : 'rgba(239, 68, 68, 0.1)',
+                                : 'rgba(251, 191, 36, 0.1)',
                         },
                       ]}
                     >

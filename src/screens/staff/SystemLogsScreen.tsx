@@ -7,6 +7,7 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius, typography } from '../../theme';
@@ -19,17 +20,11 @@ import { DatePicker } from '../../components/ui/DatePicker';
 import { Modal } from '../../components/ui/Modal';
 import { CountUp } from '../../components/ui/CountUp';
 import { SummaryCard } from '../../components/ui/SummaryCard';
-import {
-  systemLogsMockData,
-  systemLogsSummaryMock,
-  SystemLogItem,
-  ActionType,
-  actionTypeLabels,
-  actionTypeColors,
-} from '../../data/systemLogsMock';
-import { format } from 'date-fns';
+import { usePrinterLogs } from '../../lib/api/services/printerLogs';
+import type { PrinterLogResponse } from '../../types/api';
+import { format, startOfDay, startOfWeek, startOfMonth } from 'date-fns';
 
-type ActionFilterValue = 'all' | ActionType;
+type ActionFilterValue = 'all' | 'CREATE' | 'UPDATE' | 'DELETE' | 'READ';
 const PAGE_SIZE = 10;
 
 export const SystemLogsScreen: React.FC = () => {
@@ -94,44 +89,42 @@ export const SystemLogsScreen: React.FC = () => {
 
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
 
-  const getActionColor = (actionType: ActionType) => {
-    const colorClass = actionTypeColors[actionType];
+  const getActionColor = (logType: string) => {
     if (theme === 'dark') {
-      if (colorClass.includes('emerald')) return '#86efac';
-      if (colorClass.includes('blue')) return '#7dd3fc';
-      if (colorClass.includes('rose')) return '#fca5a5';
-      if (colorClass.includes('green')) return '#86efac';
-      if (colorClass.includes('amber')) return '#fde047';
-      if (colorClass.includes('purple')) return '#c4b5fd';
+      if (logType === 'print_job') return '#86efac';
+      if (logType === 'error') return '#fca5a5';
+      if (logType === 'maintenance') return '#7dd3fc';
+      if (logType === 'status_change') return '#fde047';
+      if (logType === 'configuration') return '#c4b5fd';
+      if (logType === 'admin_action') return '#86efac';
       return '#cbd5e1';
     } else {
-      if (colorClass.includes('emerald')) return '#16a34a';
-      if (colorClass.includes('blue')) return '#0284c7';
-      if (colorClass.includes('rose')) return '#dc2626';
-      if (colorClass.includes('green')) return '#16a34a';
-      if (colorClass.includes('amber')) return '#d97706';
-      if (colorClass.includes('purple')) return '#7c3aed';
+      if (logType === 'print_job') return '#16a34a';
+      if (logType === 'error') return '#dc2626';
+      if (logType === 'maintenance') return '#0284c7';
+      if (logType === 'status_change') return '#d97706';
+      if (logType === 'configuration') return '#7c3aed';
+      if (logType === 'admin_action') return '#16a34a';
       return '#475569';
     }
   };
 
-  const getActionBg = (actionType: ActionType) => {
-    const colorClass = actionTypeColors[actionType];
+  const getActionBg = (logType: string) => {
     if (theme === 'dark') {
-      if (colorClass.includes('emerald')) return 'rgba(34, 197, 94, 0.15)';
-      if (colorClass.includes('blue')) return 'rgba(59, 130, 246, 0.15)';
-      if (colorClass.includes('rose')) return 'rgba(239, 68, 68, 0.15)';
-      if (colorClass.includes('green')) return 'rgba(34, 197, 94, 0.15)';
-      if (colorClass.includes('amber')) return 'rgba(251, 191, 36, 0.15)';
-      if (colorClass.includes('purple')) return 'rgba(139, 92, 246, 0.15)';
+      if (logType === 'print_job') return 'rgba(34, 197, 94, 0.15)';
+      if (logType === 'error') return 'rgba(239, 68, 68, 0.15)';
+      if (logType === 'maintenance') return 'rgba(59, 130, 246, 0.15)';
+      if (logType === 'status_change') return 'rgba(251, 191, 36, 0.15)';
+      if (logType === 'configuration') return 'rgba(139, 92, 246, 0.15)';
+      if (logType === 'admin_action') return 'rgba(34, 197, 94, 0.15)';
       return 'rgba(148, 163, 184, 0.15)';
     } else {
-      if (colorClass.includes('emerald')) return 'rgba(34, 197, 94, 0.1)';
-      if (colorClass.includes('blue')) return 'rgba(59, 130, 246, 0.1)';
-      if (colorClass.includes('rose')) return 'rgba(239, 68, 68, 0.1)';
-      if (colorClass.includes('green')) return 'rgba(34, 197, 94, 0.1)';
-      if (colorClass.includes('amber')) return 'rgba(251, 191, 36, 0.1)';
-      if (colorClass.includes('purple')) return 'rgba(139, 92, 246, 0.1)';
+      if (logType === 'print_job') return 'rgba(34, 197, 94, 0.1)';
+      if (logType === 'error') return 'rgba(239, 68, 68, 0.1)';
+      if (logType === 'maintenance') return 'rgba(59, 130, 246, 0.1)';
+      if (logType === 'status_change') return 'rgba(251, 191, 36, 0.1)';
+      if (logType === 'configuration') return 'rgba(139, 92, 246, 0.1)';
+      if (logType === 'admin_action') return 'rgba(34, 197, 94, 0.1)';
       return 'rgba(148, 163, 184, 0.1)';
     }
   };
@@ -225,7 +218,7 @@ export const SystemLogsScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                <CountUp to={systemLogsSummaryMock.logsToday} separator="." />
+                <CountUp to={summaryStats.logsToday} separator="." />
               </Text>
             </View>
             <View
@@ -254,7 +247,7 @@ export const SystemLogsScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                <CountUp to={systemLogsSummaryMock.logsThisWeek} separator="." />
+                <CountUp to={summaryStats.logsThisWeek} separator="." />
               </Text>
             </View>
             <View
@@ -283,7 +276,7 @@ export const SystemLogsScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                <CountUp to={systemLogsSummaryMock.logsThisMonth} separator="." />
+                <CountUp to={summaryStats.logsThisMonth} separator="." />
               </Text>
             </View>
           </View>
@@ -373,7 +366,11 @@ export const SystemLogsScreen: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {paginated.length === 0 ? (
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={themeColors.primary} />
+              </View>
+            ) : filtered.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text
                   style={[
@@ -386,8 +383,8 @@ export const SystemLogsScreen: React.FC = () => {
               </View>
             ) : (
               <FlatList
-                data={paginated}
-                keyExtractor={item => item.auditId}
+                data={filtered}
+                keyExtractor={item => item.logId}
                 renderItem={({ item }) => (
                   <TouchableOpacity
                     style={[
@@ -410,21 +407,21 @@ export const SystemLogsScreen: React.FC = () => {
                             { color: themeColors.foreground },
                           ]}
                         >
-                          {item.userName}
+                          {item.userName || '-'}
                         </Text>
                         <View
                           style={[
                             styles.actionBadge,
-                            { backgroundColor: getActionBg(item.actionType) },
+                            { backgroundColor: getActionBg(item.logType) },
                           ]}
                         >
                           <Text
                             style={[
                               styles.actionText,
-                              { color: getActionColor(item.actionType) },
+                              { color: getActionColor(item.logType) },
                             ]}
                           >
-                            {actionTypeLabels[item.actionType]}
+                            {item.logType}
                           </Text>
                         </View>
                       </View>
@@ -434,7 +431,7 @@ export const SystemLogsScreen: React.FC = () => {
                           { color: themeColors['muted-foreground'] },
                         ]}
                       >
-                        {item.tableName} • {item.userRole}
+                        {item.logType} • {item.userType || '-'}
                       </Text>
                       <Text
                         style={[
@@ -442,7 +439,7 @@ export const SystemLogsScreen: React.FC = () => {
                           { color: themeColors['muted-foreground'] },
                         ]}
                       >
-                        {format(new Date(item.actionTimestamp), 'dd/MM/yyyy HH:mm:ss')}
+                        {format(new Date(item.timestamp), 'dd/MM/yyyy HH:mm:ss')}
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -455,8 +452,8 @@ export const SystemLogsScreen: React.FC = () => {
               <View style={styles.pagination}>
                 <Button
                   title={t('staff.systemLogs.previous')}
-                  onPress={() => setPage(Math.max(1, page - 1))}
-                  disabled={page === 1}
+                  onPress={() => setPage(Math.max(0, page - 1))}
+                  disabled={!pagination?.first === false}
                   variant="outline"
                   size="sm"
                 />
@@ -466,12 +463,12 @@ export const SystemLogsScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  Trang {page} / {totalPages}
+                  Trang {(pagination?.page || 0) + 1} / {totalPages}
                 </Text>
                 <Button
                   title="Sau"
-                  onPress={() => setPage(Math.min(totalPages, page + 1))}
-                  disabled={page === totalPages}
+                  onPress={() => setPage(page + 1)}
+                  disabled={pagination?.last === true}
                   variant="outline"
                   size="sm"
                 />
@@ -531,7 +528,7 @@ export const SystemLogsScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selected.userEmail}
+                  {'-'}
                 </Text>
               </View>
               <View style={styles.modalInfoRow}>
@@ -549,7 +546,7 @@ export const SystemLogsScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selected.userRole}
+                  {selected.userType || '-'}
                 </Text>
               </View>
             </View>
@@ -578,7 +575,7 @@ export const SystemLogsScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {actionTypeLabels[selected.actionType]}
+                  {selected.logType}
                 </Text>
               </View>
               <View style={styles.modalInfoRow}>
@@ -596,10 +593,10 @@ export const SystemLogsScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selected.tableName}
+                  {selected.logType}
                 </Text>
               </View>
-              {selected.recordId && (
+              {selected.jobId && (
                 <View style={styles.modalInfoRow}>
                   <Text
                     style={[
@@ -615,11 +612,11 @@ export const SystemLogsScreen: React.FC = () => {
                       { color: themeColors.foreground },
                     ]}
                   >
-                    {selected.recordId}
+                    {selected.jobId}
                   </Text>
                 </View>
               )}
-              {selected.changedField && (
+              {selected.description && (
                 <View style={styles.modalInfoRow}>
                   <Text
                     style={[
@@ -627,7 +624,7 @@ export const SystemLogsScreen: React.FC = () => {
                       { color: themeColors['muted-foreground'] },
                     ]}
                   >
-                    {t('staff.systemLogs.modalFieldChanged')}
+                    Mô tả:
                   </Text>
                   <Text
                     style={[
@@ -635,7 +632,7 @@ export const SystemLogsScreen: React.FC = () => {
                       { color: themeColors.foreground },
                     ]}
                   >
-                    {selected.changedField}
+                    {selected.description}
                   </Text>
                 </View>
               )}
@@ -665,7 +662,7 @@ export const SystemLogsScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selected.ipAddress}
+                  {selected.ipAddress || '-'}
                 </Text>
               </View>
               <View style={styles.modalInfoRow}>
@@ -684,7 +681,7 @@ export const SystemLogsScreen: React.FC = () => {
                   ]}
                 >
                   {format(
-                    new Date(selected.actionTimestamp),
+                    new Date(selected.timestamp),
                     'dd/MM/yyyy HH:mm:ss'
                   )}
                 </Text>
