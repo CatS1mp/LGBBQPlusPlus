@@ -18,7 +18,7 @@ const getApiUrl = (): string => {
 
 export const ENV = {
   NEXT_PUBLIC_API_URL: getApiUrl(),
-  API_TIMEOUT: 30000,
+  API_TIMEOUT: 15000, // Reduced from 30s to 15s for better UX
   ENABLE_LOGGING: __DEV__,
 } as const;
 
