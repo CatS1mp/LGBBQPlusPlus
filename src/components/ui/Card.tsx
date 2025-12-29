@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, ViewStyle, StyleSheet } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, ViewStyle, StyleSheet, Animated } from 'react-native';
 import { colors, spacing, borderRadius } from '../../theme';
 import { useTheme } from '../../lib/hooks/useTheme';
 
@@ -16,9 +16,33 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   const { theme } = useTheme();
   const themeColors = colors[theme];
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 7,
+      }),
+    ]).start();
+  }, [fadeAnim, scaleAnim]);
+
+  const cardStyle = style || {};
+  const hasPaddingOverride = cardStyle.padding !== undefined || 
+                              cardStyle.paddingHorizontal !== undefined ||
+                              cardStyle.paddingLeft !== undefined ||
+                              cardStyle.paddingRight !== undefined;
 
   return (
-    <View
+    <Animated.View
       style={[
         styles.card,
         {
@@ -29,12 +53,16 @@ export const Card: React.FC<CardProps> = ({
                 ? 'rgba(255, 255, 255, 0.05)'
                 : 'rgba(255, 255, 255, 0.9)',
           borderColor: themeColors.border,
+          opacity: fadeAnim,
+          transform: [{ scale: scaleAnim }],
         },
         style,
+        // Ensure padding is preserved if not explicitly overridden
+        !hasPaddingOverride && { padding: spacing.lg },
       ]}
     >
       {children}
-    </View>
+    </Animated.View>
   );
 };
 
@@ -59,9 +87,9 @@ export const CardTitle: React.FC<CardTitleProps> = ({ children, style }) => {
   return (
     <View style={style}>
       {typeof children === 'string' ? (
-        <View style={[styles.title, { color: themeColors.foreground }]}>
+        <Text style={[styles.title, { color: themeColors.foreground }]}>
           {children}
-        </View>
+        </Text>
       ) : (
         children
       )}
@@ -116,6 +144,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 5,
+    overflow: 'hidden',
   },
   header: {
     marginBottom: spacing.md,

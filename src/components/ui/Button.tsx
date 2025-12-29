@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   TouchableOpacity,
   Text,
@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   ViewStyle,
   TextStyle,
+  Animated,
 } from 'react-native';
 import { Gradient, gradientPresets } from './Gradient';
 import { colors, spacing, borderRadius, typography } from '../../theme';
@@ -47,6 +48,25 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   const { theme } = useTheme();
   const themeColors = colors[theme];
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.95,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 10,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 300,
+      friction: 10,
+    }).start();
+  };
 
   const getButtonStyle = (): ViewStyle => {
     const baseStyle: ViewStyle = {
@@ -167,31 +187,39 @@ export const Button: React.FC<ButtonProps> = ({
   if (variant === 'gradient' && !disabled) {
     const gradientColorsToUse = gradientColors || gradientPresets.primary;
     return (
-      <TouchableOpacity
-        onPress={onPress}
-        disabled={disabled || loading}
-        activeOpacity={0.8}
-        style={[disabled && styles.disabled, style]}
-      >
-        <Gradient
-          colors={gradientColorsToUse}
-          style={[getButtonStyle()]}
+      <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+        <TouchableOpacity
+          onPress={onPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          disabled={disabled || loading}
+          activeOpacity={0.8}
+          style={[disabled && styles.disabled, style]}
         >
-          {buttonContent}
-        </Gradient>
-      </TouchableOpacity>
+          <Gradient
+            colors={gradientColorsToUse}
+            style={[getButtonStyle()]}
+          >
+            {buttonContent}
+          </Gradient>
+        </TouchableOpacity>
+      </Animated.View>
     );
   }
 
   return (
-    <TouchableOpacity
-      style={[getButtonStyle(), disabled && styles.disabled, style]}
-      onPress={onPress}
-      disabled={disabled || loading}
-      activeOpacity={0.7}
-    >
-      {buttonContent}
-    </TouchableOpacity>
+    <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+      <TouchableOpacity
+        style={[getButtonStyle(), disabled && styles.disabled, style]}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        disabled={disabled || loading}
+        activeOpacity={0.7}
+      >
+        {buttonContent}
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 

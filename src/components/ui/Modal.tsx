@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Modal as RNModal,
   View,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   ViewStyle,
+  Animated,
 } from 'react-native';
 import { X } from 'lucide-react-native';
 import { colors, spacing, borderRadius, typography } from '../../theme';
@@ -31,6 +32,39 @@ export const Modal: React.FC<ModalProps> = ({
 }) => {
   const { theme } = useTheme();
   const themeColors = colors[theme];
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isOpen) {
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+          tension: 50,
+          friction: 7,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isOpen, scaleAnim, opacityAnim]);
 
   const getSizeStyle = (): ViewStyle => {
     switch (size) {
@@ -55,7 +89,7 @@ export const Modal: React.FC<ModalProps> = ({
         activeOpacity={1}
         onPress={onClose}
       >
-        <View
+        <Animated.View
           style={[
             styles.container,
             {
@@ -63,6 +97,8 @@ export const Modal: React.FC<ModalProps> = ({
                 theme === 'dark'
                   ? 'rgba(15, 23, 42, 0.95)'
                   : 'rgba(255, 255, 255, 0.98)',
+              transform: [{ scale: scaleAnim }],
+              opacity: opacityAnim,
             },
             getSizeStyle(),
           ]}
@@ -101,7 +137,7 @@ export const Modal: React.FC<ModalProps> = ({
               {children}
             </ScrollView>
           </TouchableOpacity>
-        </View>
+        </Animated.View>
       </TouchableOpacity>
     </RNModal>
   );
