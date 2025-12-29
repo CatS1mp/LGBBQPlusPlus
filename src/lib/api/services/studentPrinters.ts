@@ -33,9 +33,11 @@ export function useAvailablePrinters(params?: {
   keyword?: string;
   buildingId?: string;
   roomId?: string;
+  modelId?: string;
   status?: string;
   supportsColor?: boolean;
   supportsDuplex?: boolean;
+  onlyAcceptingJobs?: boolean;
   page?: number;
   limit?: number;
   sortBy?: string;
@@ -45,11 +47,14 @@ export function useAvailablePrinters(params?: {
   if (params?.keyword) queryParams.append('keyword', params.keyword);
   if (params?.buildingId) queryParams.append('buildingId', params.buildingId);
   if (params?.roomId) queryParams.append('roomId', params.roomId);
+  if (params?.modelId) queryParams.append('modelId', params.modelId);
   if (params?.status) queryParams.append('status', params.status);
   if (params?.supportsColor !== undefined)
     queryParams.append('supportsColor', params.supportsColor.toString());
   if (params?.supportsDuplex !== undefined)
     queryParams.append('supportsDuplex', params.supportsDuplex.toString());
+  if (params?.onlyAcceptingJobs !== undefined)
+    queryParams.append('onlyAcceptingJobs', params.onlyAcceptingJobs.toString());
   if (params?.page !== undefined)
     queryParams.append('page', params.page.toString());
   if (params?.limit !== undefined)
@@ -58,9 +63,26 @@ export function useAvailablePrinters(params?: {
   if (params?.sortDirection)
     queryParams.append('sortDirection', params.sortDirection);
 
-  const url = `/printers/available${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+  const url = `/student/printers${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
 
-  return useApiQuery<PaginatedApiResponse<AvailablePrinterResponse>>(
+  return useApiQuery<ApiResponse<{
+    stats: {
+      totalPrinters: number;
+      readyPrinters: number;
+      printingPrinters: number;
+      maintenancePrinters: number;
+      averageQueueLength: number;
+    };
+    data: AvailablePrinterResponse[];
+    pagination: {
+      page: number;
+      limit: number;
+      totalItems: number;
+      totalPages: number;
+      first: boolean;
+      last: boolean;
+    };
+  }>>(
     studentPrinterKeys.available(params),
     url
   );

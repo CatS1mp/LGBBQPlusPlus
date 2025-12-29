@@ -92,6 +92,9 @@ export function useCreatePrintJob() {
 
 /**
  * Hook to calculate print cost
+ * Endpoint: POST /students/print-jobs/calculate-cost
+ * Note: If this endpoint returns 404, check backend documentation for correct endpoint
+ * Possible alternatives: /student/print/calculate-cost, /print-jobs/calculate-cost
  */
 export function useCalculatePrintCost() {
   return useApiMutation<

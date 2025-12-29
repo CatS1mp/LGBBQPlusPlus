@@ -20,7 +20,7 @@ export const studentProfileKeys = {
 export function useStudentProfile() {
   return useApiQuery<ApiResponse<StudentProfileResponse>>(
     studentProfileKeys.current(),
-    '/students/profile'
+    '/student/profile'
   );
 }
 
@@ -32,10 +32,23 @@ export function useUpdateStudentProfile() {
   return useApiMutation<
     ApiResponse<StudentProfileResponse>,
     UpdateStudentProfileRequest
-  >('/students/profile', 'put', {
+  >('/student/profile', 'put', {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: studentProfileKeys.all });
     },
   });
+}
+
+/**
+ * Hook to change password
+ */
+export function useChangePassword() {
+  return useApiMutation<
+    ApiResponse<{ message: string }>,
+    {
+      currentPassword: string;
+      newPassword: string;
+    }
+  >('/auth/change-password', 'post');
 }
 
