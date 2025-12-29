@@ -113,7 +113,28 @@
       },
       "quickActions": {
         "title": "Thao tác nhanh",
-        "description": "Đi tới tác vụ được dùng nhiều nhất"
+        "description": "Đi tới tác vụ được dùng nhiều nhất",
+        "items": {
+          "print": {
+            "title": "In tài liệu",
+            "description": "Tải file và gửi lệnh in ngay"
+          },
+          "buy": {
+            "title": "Nạp tiền",
+            "description": "Nạp tiền vào tài khoản bằng ví hoặc thẻ"
+          },
+          "history": {
+            "title": "Lịch sử in",
+            "description": "Theo dõi trạng thái và chi phí"
+          },
+          "printers": {
+            "title": "Máy in gần bạn",
+            "description": "Xem máy in online theo tòa nhà"
+          }
+        },
+        "badges": {
+          "new": "Mới"
+        }
       },
       "recent": {
         "title": "In gần đây",
@@ -151,10 +172,6 @@
       "tips": {
         "title": "Mẹo nhanh",
         "description": "Giữ cho việc in ấn của bạn mượt mà."
-      },
-      "quickActions": {
-        "title": "Thao tác nhanh",
-        "description": "Đi tới tác vụ được dùng nhiều nhất"
       },
       "navigation": {
         "dashboard": "Trang chủ",
@@ -198,6 +215,7 @@
       },
       "jobs": "công việc",
       "jobsCount": "{{count}} công việc",
+      "jobsAhead": "công việc đang chờ",
       "yes": "Có",
       "no": "Không",
       "features": "Chức năng",
@@ -217,14 +235,21 @@
       "selectLanguage": "Chọn ngôn ngữ",
       "searchPlaceholder": "Tìm kiếm máy in...",
       "filterStatus": "Trạng thái",
+      "filterBuilding": "Tòa nhà",
+      "filterBuildingAll": "Tất cả tòa nhà",
+      "onlyAvailable": "Chỉ máy in sẵn sàng",
+      "colorOnly": "Chỉ máy in màu",
+      "duplexOnly": "Chỉ máy in 2 mặt",
       "modalTitle": "Chi tiết máy in",
       "location": "Vị trí:",
       "uptime": "Uptime:",
-      "note": "Ghi chú"
+      "note": "Ghi chú",
+      "loading": "Đang tải danh sách máy in..."
     },
     "print": {
       "title": "In tài liệu",
       "description": "Tải lên và in tài liệu của bạn",
+      "cancel": "Hủy",
       "steps": {
         "upload": "Tải lên",
         "choosePrinter": "Chọn máy in",
@@ -264,6 +289,7 @@
           "duplex": "2 mặt"
         },
         "noResults": "Không tìm thấy máy in nào phù hợp",
+        "loading": "Đang tải máy in...",
         "back": "Quay lại",
         "next": "Tiếp theo"
       },
@@ -304,6 +330,10 @@
         "printConfig": "Cấu hình in",
         "estimatedCost": "Chi phí ước tính",
         "costNote": "Chi phí có thể thay đổi tùy theo số trang thực tế của tài liệu",
+        "cancel": "Hủy",
+        "cancelTitle": "Hủy tiến trình in",
+        "cancelMessage": "Bạn có chắc muốn hủy tiến trình in? Tất cả thông tin đã nhập sẽ bị xóa.",
+        "cancelConfirm": "Xác nhận",
         "warning": "Lưu ý quan trọng",
         "warningMessage": "Vui lòng đảm bảo bạn có đủ số trang in trong tài khoản. Sau khi xác nhận, công việc in sẽ được thêm vào hàng đợi và sẽ được xử lý ngay khi máy in sẵn sàng.",
         "processing": "Đang xử lý...",
@@ -467,7 +497,7 @@
         "studentId": "Mã sinh viên",
         "faculty": "Khoa",
         "major": "Chuyên ngành",
-        "academicYear": "Năm học"
+        "classCode": "Lớp"
       },
       "changePasswordModal": {
         "title": "Đổi mật khẩu",
@@ -773,15 +803,25 @@
       "appearance": {
         "title": "Giao diện",
         "description": "Chọn cách hiển thị bảng điều khiển trên thiết bị của bạn.",
+        "theme": "Giao diện",
+        "themeDescription": "Chọn chế độ hiển thị cho ứng dụng.",
+        "light": "Chế độ sáng",
+        "dark": "Chế độ tối",
+        "system": "Hệ thống",
         "lightTitle": "Chế độ sáng",
         "lightDescription": "Nền sáng, độ tương phản cao phù hợp khi làm việc ban ngày.",
         "darkTitle": "Chế độ tối",
         "darkDescription": "Giao diện dịu mắt khi sử dụng ban đêm hoặc môi trường thiếu sáng.",
+        "systemTitle": "Hệ thống",
+        "systemDescription": "Chọn chế độ hiển thị theo hệ thống.",
         "activeLabel": "Đang dùng"
       },
       "language": {
         "title": "Ngôn ngữ",
         "description": "Chọn ngôn ngữ hiển thị cho ứng dụng.",
+        "select": "Chọn ngôn ngữ",
+        "english": "Tiếng Anh",
+        "vietnamese": "Tiếng Việt",
         "englishTitle": "Tiếng Anh",
         "englishDescription": "Sử dụng tiếng Anh làm ngôn ngữ giao diện.",
         "vietnameseTitle": "Tiếng Việt",
@@ -810,7 +850,85 @@
         "previous": "Bài trước",
         "autoPlay": "Tự động phát nhạc",
         "autoPlayDescription": "Tự động phát nhạc khi vào trang"
-      }
+      },
+      "notifications": {
+        "title": "Thông báo",
+        "push": "Thông báo đẩy",
+        "pushDescription": "Nhận thông báo đẩy cho công việc in",
+        "email": "Cảnh báo email",
+        "emailDescription": "Nhận cảnh báo email khi hoàn thành in"
+      },
+      "account": {
+        "title": "Tài khoản",
+        "changePassword": "Đổi mật khẩu",
+        "editProfile": "Chỉnh sửa hồ sơ"
+      },
+      "about": {
+        "title": "Giới thiệu",
+        "version": "Phiên bản",
+        "build": "Bản dựng"
+      },
+      "logout": "Đăng xuất"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "SmartPrint",
+      "subtitle": "Đăng nhập vào tài khoản của bạn",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Mật khẩu",
+      "passwordPlaceholder": "••••••••",
+      "loginButton": "Đăng nhập",
+      "forgotPassword": "Quên mật khẩu?",
+      "fillAllFields": "Vui lòng điền đầy đủ thông tin",
+      "error": "Đăng nhập thất bại. Vui lòng thử lại."
+    },
+    "forgotPassword": {
+      "title": "Quên mật khẩu",
+      "description": "Nhập email của bạn để nhận liên kết đặt lại mật khẩu",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "emailRequired": "Email là bắt buộc",
+      "invalidEmail": "Email không hợp lệ",
+      "sendLink": "Gửi liên kết đặt lại",
+      "sending": "Đang gửi...",
+      "linkSent": "Liên kết đặt lại đã được gửi! Kiểm tra email của bạn.",
+      "resendEmail": "Gửi lại email",
+      "resendIn": "Gửi lại sau {{seconds}}s",
+      "backToLogin": "Quay lại đăng nhập",
+      "successTitle": "Thành công",
+      "successMessage": "Nếu email tồn tại trong hệ thống, chúng tôi đã gửi liên kết đặt lại mật khẩu đến email của bạn.",
+      "error": "Gửi email đặt lại thất bại"
+    },
+    "resetPassword": {
+      "title": "Đặt lại mật khẩu",
+      "description": "Nhập mật khẩu mới của bạn",
+      "newPasswordLabel": "Mật khẩu mới",
+      "confirmPasswordLabel": "Xác nhận mật khẩu",
+      "passwordPlaceholder": "••••••••",
+      "resetButton": "Đặt lại mật khẩu",
+      "resetting": "Đang đặt lại...",
+      "backToLogin": "Quay lại đăng nhập",
+      "missingToken": "Thiếu token đặt lại",
+      "invalidToken": "Token không hợp lệ hoặc đã hết hạn",
+      "fillAllFields": "Vui lòng điền đầy đủ thông tin",
+      "passwordsNotMatch": "Mật khẩu không khớp",
+      "passwordMinLength": "Mật khẩu phải có ít nhất 8 ký tự",
+      "passwordLowercase": "Mật khẩu phải chứa ít nhất một chữ thường",
+      "passwordUppercase": "Mật khẩu phải chứa ít nhất một chữ hoa",
+      "passwordNumber": "Mật khẩu phải chứa ít nhất một số",
+      "passwordSpecial": "Mật khẩu phải chứa ít nhất một ký tự đặc biệt (@$!%*?&#)",
+      "validatingToken": "Đang xác thực token...",
+      "successTitle": "Thành công",
+      "successMessage": "Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.",
+      "ok": "OK",
+      "error": "Đặt lại mật khẩu thất bại"
+    },
+    "language": {
+      "title": "Ngôn ngữ",
+      "english": "Tiếng Anh",
+      "vietnamese": "Tiếng Việt"
     }
   }
 }

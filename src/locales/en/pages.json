@@ -113,7 +113,28 @@
       },
       "quickActions": {
         "title": "Quick actions",
-        "description": "Jump into your most used flows"
+        "description": "Jump into your most used flows",
+        "items": {
+          "print": {
+            "title": "Print document",
+            "description": "Upload file and send print command"
+          },
+          "buy": {
+            "title": "Top up",
+            "description": "Add money to account via wallet or card"
+          },
+          "history": {
+            "title": "Print history",
+            "description": "Track status and costs"
+          },
+          "printers": {
+            "title": "Nearby printers",
+            "description": "View online printers by building"
+          }
+        },
+        "badges": {
+          "new": "New"
+        }
       },
       "recent": {
         "title": "Recent prints",
@@ -151,10 +172,6 @@
       "tips": {
         "title": "Quick tips",
         "description": "Keep your printing smooth."
-      },
-      "quickActions": {
-        "title": "Quick actions",
-        "description": "Jump into your most used flows"
       },
       "navigation": {
         "dashboard": "Dashboard",
@@ -198,6 +215,7 @@
       },
       "jobs": "jobs",
       "jobsCount": "{{count}} jobs",
+      "jobsAhead": "jobs ahead",
       "yes": "Yes",
       "no": "No",
       "features": "Features",
@@ -217,14 +235,21 @@
       "selectLanguage": "Select language",
       "searchPlaceholder": "Search printers...",
       "filterStatus": "Status",
+      "filterBuilding": "Building",
+      "filterBuildingAll": "All Buildings",
+      "onlyAvailable": "Show only ready printers",
+      "colorOnly": "Color printers only",
+      "duplexOnly": "Duplex printers only",
       "modalTitle": "Printer details",
       "location": "Location:",
       "uptime": "Uptime:",
-      "note": "Note"
+      "note": "Note",
+      "loading": "Loading printers..."
     },
     "print": {
       "title": "Print Document",
       "description": "Upload and print your documents",
+      "cancel": "Cancel",
       "steps": {
         "upload": "Upload",
         "choosePrinter": "Choose Printer",
@@ -264,6 +289,7 @@
           "duplex": "Duplex"
         },
         "noResults": "No printers found",
+        "loading": "Loading printers...",
         "back": "Back",
         "next": "Next"
       },
@@ -304,6 +330,10 @@
         "printConfig": "Print Configuration",
         "estimatedCost": "Estimated Cost",
         "costNote": "Cost may vary based on actual number of pages in the document",
+        "cancel": "Cancel",
+        "cancelTitle": "Cancel Print Process",
+        "cancelMessage": "Are you sure you want to cancel the print process? All entered information will be deleted.",
+        "cancelConfirm": "Confirm",
         "warning": "Important Notice",
         "warningMessage": "Please ensure you have sufficient printing pages in your account. After confirmation, the print job will be added to the queue and will be processed as soon as the printer is ready.",
         "processing": "Processing...",
@@ -467,7 +497,7 @@
         "studentId": "Student ID",
         "faculty": "Faculty",
         "major": "Major",
-        "academicYear": "Academic Year"
+        "classCode": "Class"
       },
       "changePasswordModal": {
         "title": "Change Password",
@@ -773,15 +803,25 @@
       "appearance": {
         "title": "Appearance",
         "description": "Choose how the dashboard looks on your device.",
+        "theme": "Theme",
+        "themeDescription": "Choose the display mode for the application.",
+        "light": "Light mode",
+        "dark": "Dark mode",
+        "system": "System",
         "lightTitle": "Light mode",
         "lightDescription": "Bright background with higher contrast for daytime viewing.",
         "darkTitle": "Dark mode",
         "darkDescription": "Dimmed interface that is gentle on the eyes at night.",
+        "systemTitle": "System",
+        "systemDescription": "Choose display mode according to system.",
         "activeLabel": "Active"
       },
       "language": {
         "title": "Language",
         "description": "Choose the display language for the application.",
+        "select": "Select language",
+        "english": "English",
+        "vietnamese": "Vietnamese",
         "englishTitle": "English",
         "englishDescription": "Use English as the interface language.",
         "vietnameseTitle": "Vietnamese",
@@ -810,7 +850,85 @@
         "previous": "Previous",
         "autoPlay": "Auto Play",
         "autoPlayDescription": "Automatically play music when entering the page"
-      }
+      },
+      "notifications": {
+        "title": "Notifications",
+        "push": "Push Notifications",
+        "pushDescription": "Receive push notifications for print jobs",
+        "email": "Email Alerts",
+        "emailDescription": "Receive email alerts for print completion"
+      },
+      "account": {
+        "title": "Account",
+        "changePassword": "Change Password",
+        "editProfile": "Edit Profile"
+      },
+      "about": {
+        "title": "About",
+        "version": "Version",
+        "build": "Build"
+      },
+      "logout": "Log Out"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "SmartPrint",
+      "subtitle": "Sign in to your account",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "••••••••",
+      "loginButton": "Login",
+      "forgotPassword": "Forgot Password?",
+      "fillAllFields": "Please fill in all fields",
+      "error": "Login failed. Please try again."
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "description": "Enter your email to receive a password reset link",
+      "emailLabel": "Email",
+      "emailPlaceholder": "you@example.com",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Invalid email address",
+      "sendLink": "Send Reset Link",
+      "sending": "Sending...",
+      "linkSent": "Reset link sent! Check your email.",
+      "resendEmail": "Resend Email",
+      "resendIn": "Resend in {{seconds}}s",
+      "backToLogin": "Back to Login",
+      "successTitle": "Success",
+      "successMessage": "If the email exists in the system, we have sent a password reset link to your email.",
+      "error": "Failed to send reset email"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "description": "Enter your new password",
+      "newPasswordLabel": "New Password",
+      "confirmPasswordLabel": "Confirm Password",
+      "passwordPlaceholder": "••••••••",
+      "resetButton": "Reset Password",
+      "resetting": "Resetting...",
+      "backToLogin": "Back to Login",
+      "missingToken": "Reset token is missing",
+      "invalidToken": "Invalid or expired token",
+      "fillAllFields": "Please fill in all fields",
+      "passwordsNotMatch": "Passwords do not match",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordLowercase": "Password must contain at least one lowercase letter",
+      "passwordUppercase": "Password must contain at least one uppercase letter",
+      "passwordNumber": "Password must contain at least one number",
+      "passwordSpecial": "Password must contain at least one special character (@$!%*?&#)",
+      "validatingToken": "Validating token...",
+      "successTitle": "Success",
+      "successMessage": "Password reset successfully. Please login again.",
+      "ok": "OK",
+      "error": "Failed to reset password"
+    },
+    "language": {
+      "title": "Language",
+      "english": "English",
+      "vietnamese": "Vietnamese"
     }
   }
 }
