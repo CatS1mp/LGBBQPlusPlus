@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 
+        IMPORTANT: Domain-specific configs are checked BEFORE base-config.
+        So localhost config must come first to allow Metro bundler.
+    -->
+    
+    <!-- Allow cleartext traffic for localhost (Metro bundler) - MUST BE FIRST -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <!-- Android emulator host IP -->
+        <domain includeSubdomains="false">10.0.3.2</domain>
+    </domain-config>
+    
+    <!-- DEBUG: Trust all certificates in debug builds (DEVELOPMENT ONLY) -->
+    <!-- WARNING: This is insecure and should only be used for development -->
+    <debug-overrides>
+        <trust-anchors>
+            <!-- Trust all certificates in debug mode -->
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+    
+    <!-- Trust system certificates - HTTPS ONLY for production domains -->
+    <!-- This applies to all other domains (including Heroku) -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Trust system certificates -->
+            <certificates src="system" />
+            <!-- Trust user-installed certificates (for development) -->
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- Explicit configuration for Heroku - HTTPS ONLY -->
+    <!-- Heroku provides SSL certificates from Let's Encrypt/DigiCert -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">herokuapp.com</domain>
+        <trust-anchors>
+            <!-- Trust system certificates (includes Let's Encrypt, DigiCert, etc.) -->
+            <certificates src="system" />
+            <!-- Trust user-installed certificates (for debugging only) -->
+            <certificates src="user" />
+        </trust-anchors>
+        <!-- Pin to specific certificate if needed (optional, for production) -->
+        <!-- <pin-set>
+            <pin digest="SHA-256">base64-encoded-public-key-hash</pin>
+        </pin-set> -->
+    </domain-config>
+</network-security-config>
+
