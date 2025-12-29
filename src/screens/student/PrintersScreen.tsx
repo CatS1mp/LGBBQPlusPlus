@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,15 +19,12 @@ import { Select } from '../../components/ui/Select';
 import { Modal } from '../../components/ui/Modal';
 import { CountUp } from '../../components/ui/CountUp';
 import { SummaryCard } from '../../components/ui/SummaryCard';
-import {
-  printerInfoList,
-  printerInfoSummary,
-  printerNotices,
-  PrinterInfoMock,
-  PrinterStatus,
-} from '../../data/printersInfoMock';
+import { Pagination } from '../../components/ui/Pagination';
+import { SkeletonCard } from '../../components/ui/Skeleton';
+import { useAvailablePrinters, usePrinterQueue } from '../../lib/api/services/studentPrinters';
+import type { AvailablePrinterResponse } from '../../types/api';
 
-type StatusTab = 'all' | PrinterStatus;
+type StatusTab = 'all' | 'online' | 'busy' | 'maintenance' | 'offline';
 
 export const PrintersScreen: React.FC = () => {
   const { t } = useTranslation('pages');
@@ -39,12 +36,60 @@ export const PrintersScreen: React.FC = () => {
   const [onlyAvailable, setOnlyAvailable] = useState(true);
   const [colorOnly, setColorOnly] = useState(false);
   const [duplexOnly, setDuplexOnly] = useState(false);
-  const [selectedPrinter, setSelectedPrinter] = useState<PrinterInfoMock | null>(null);
+  const [selectedPrinter, setSelectedPrinter] = useState<AvailablePrinterResponse | null>(null);
+  const [printerPage, setPrinterPage] = useState(0);
+
+  // Check if we need to fetch all data for accurate pagination
+  const hasClientSideFilter = building !== 'all' || onlyAvailable;
+  
+  // API calls - fetch all data if client-side filter is active
+  const { data: printersData, isLoading } = useAvailablePrinters({
+    keyword: keyword || undefined,
+    status: status !== 'all' ? status : undefined,
+    supportsColor: colorOnly || undefined,
+    supportsDuplex: duplexOnly || undefined,
+    page: hasClientSideFilter ? 0 : printerPage,
+    limit: hasClientSideFilter ? 1000 : 10, // Fetch all if client-side filter
+  });
+
+  const printers = useMemo(() => {
+    // Response structure: ApiResponse<{ stats, data, pagination }>
+    // printersData.data.data.data is the array of printers
+    return printersData?.data?.data?.data || [];
+  }, [printersData]);
+  const printerPagination = printersData?.data?.data?.pagination;
+  
+  // Get queue for selected printer
+  const { data: queueData } = usePrinterQueue(
+    selectedPrinter?.printerId || '',
+    !!selectedPrinter
+  );
+  
+  // Get queue for modal
+  const { data: selectedQueueData } = usePrinterQueue(
+    selectedPrinter?.printerId || '',
+    !!selectedPrinter
+  );
+
+  // Reset page to 0 when filters change
+  useEffect(() => {
+    setPrinterPage(0);
+  }, [status, keyword, colorOnly, duplexOnly, building, onlyAvailable]);
 
   const buildingOptions = useMemo(() => {
-    const values = Array.from(new Set(printerInfoList.map(p => p.building)));
+    const values = Array.from(new Set(printers.map(p => p.buildingCode)));
     return values.sort();
-  }, []);
+  }, [printers]);
+
+  // Calculate summary stats
+  const printerSummary = useMemo(() => {
+    const total = printers.length;
+    const online = printers.filter(p => p.status === 'online' || p.printingStatus === 'idle').length;
+    const busy = printers.filter(p => p.printingStatus === 'printing' || p.status === 'busy').length;
+    const offline = printers.filter(p => p.status === 'offline').length;
+    const maintenance = printers.filter(p => p.status === 'maintenance').length;
+    return { total, online, busy, offline, maintenance };
+  }, [printers]);
 
   const statusTabs: { value: StatusTab; label: string }[] = [
     { value: 'all', label: t('student.printers.status.all') },
@@ -55,39 +100,60 @@ export const PrintersScreen: React.FC = () => {
   ];
 
   const filteredPrinters = useMemo(() => {
-    const normalized = keyword.trim().toLowerCase();
+    let result = printers;
+    
+    // Apply client-side filters
+    if (building !== 'all') {
+      result = result.filter(printer => printer.buildingCode === building);
+    }
+    
+    if (onlyAvailable) {
+      result = result.filter(printer => 
+        printer.status !== 'offline' && printer.status !== 'maintenance'
+      );
+    }
+    
+    // Apply pagination if client-side filter is active
+    if (hasClientSideFilter) {
+      const limit = 10;
+      const start = printerPage * limit;
+      const end = start + limit;
+      return result.slice(start, end);
+    }
+    
+    return result;
+  }, [printers, building, onlyAvailable, hasClientSideFilter, printerPage]);
 
-    return printerInfoList.filter(printer => {
-      if (status !== 'all' && printer.status !== status) return false;
+  // Calculate pagination based on filtered results
+  const effectivePagination = useMemo(() => {
+    if (!hasClientSideFilter) {
+      // No client-side filter, use API pagination
+      return printerPagination;
+    }
 
-      if (
-        onlyAvailable &&
-        (printer.status === 'offline' || printer.status === 'maintenance')
-      )
-        return false;
-
-      if (building !== 'all' && printer.building !== building) return false;
-
-      if (colorOnly && !printer.supportsColor) return false;
-
-      if (duplexOnly && !printer.supportsDuplex) return false;
-
-      if (
-        normalized.length > 0 &&
-        !printer.name.toLowerCase().includes(normalized) &&
-        !printer.brand.toLowerCase().includes(normalized) &&
-        !printer.model.toLowerCase().includes(normalized) &&
-        !printer.room.toLowerCase().includes(normalized) &&
-        !printer.building.toLowerCase().includes(normalized)
-      )
-        return false;
-
+    // Has client-side filter, calculate based on all filtered results
+    const allFiltered = printers.filter(printer => {
+      if (building !== 'all' && printer.buildingCode !== building) return false;
+      if (onlyAvailable && (printer.status === 'offline' || printer.status === 'maintenance')) return false;
       return true;
     });
-  }, [status, building, keyword, onlyAvailable, colorOnly, duplexOnly]);
+    
+    const limit = 10;
+    const totalItems = allFiltered.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    
+    return {
+      page: printerPage,
+      limit: limit,
+      totalItems: totalItems,
+      totalPages: totalPages,
+      first: printerPage === 0,
+      last: printerPage >= totalPages - 1,
+    };
+  }, [printers, building, onlyAvailable, hasClientSideFilter, printerPage, printerPagination]);
 
-  const getStatusStyle = (status: PrinterStatus) => {
-    switch (status) {
+  const getStatusStyle = useCallback((printerStatus: string) => {
+    switch (printerStatus) {
       case 'online':
         return {
           bg: theme === 'dark' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.1)',
@@ -109,10 +175,10 @@ export const PrintersScreen: React.FC = () => {
           text: theme === 'dark' ? '#7dd3fc' : '#0284c7',
         };
     }
-  };
+  }, [theme]);
 
-  const getStatusLabel = (status: PrinterStatus) => {
-    switch (status) {
+  const getStatusLabel = useCallback((printerStatus: string) => {
+    switch (printerStatus) {
       case 'busy':
         return t('student.printers.status.busy');
       case 'online':
@@ -122,17 +188,13 @@ export const PrintersScreen: React.FC = () => {
       case 'offline':
         return t('student.print.step2.status.offline');
     }
-  };
+  }, [t]);
 
-  const renderPrinterCard = ({ item }: { item: PrinterInfoMock }) => {
-    const statusStyle = getStatusStyle(item.status);
-    const estimatedMinutes = Math.max(1, Math.round(item.queueLength * 2));
-
-    console.log('[PrintersScreen] queue debug', {
-      id: item.id,
-      name: item.name,
-      queueLength: item.queueLength,
-    });
+  const renderPrinterCard = useCallback(({ item }: { item: AvailablePrinterResponse }) => {
+    const displayStatus = item.printingStatus === 'printing' ? 'busy' : item.status;
+    const statusStyle = getStatusStyle(displayStatus);
+    const queueLength = (queueData?.data as any)?.queueCount || 0;
+    const estimatedMinutes = Math.max(1, Math.round(queueLength * 2));
 
     return (
       <Card style={styles.printerCard}>
@@ -145,13 +207,13 @@ export const PrintersScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                {item.name}
+                {item.brandName} {item.modelName}
               </Text>
             </View>
             <View
               style={[
                 styles.statusBadge,
-                { backgroundColor: statusStyle.bg },
+                { backgroundColor: statusStyle?.bg || 'rgba(148, 163, 184, 0.1)' },
               ]}
             >
               <Text
@@ -160,7 +222,7 @@ export const PrintersScreen: React.FC = () => {
                   { color: statusStyle?.text },
                 ]}
               >
-                {getStatusLabel(item.status)}
+                {getStatusLabel(displayStatus)}
               </Text>
             </View>
           </View>
@@ -194,7 +256,7 @@ export const PrintersScreen: React.FC = () => {
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {item.model}
+                {item.modelName}
               </Text>
             </View>
 
@@ -225,7 +287,7 @@ export const PrintersScreen: React.FC = () => {
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {item.building} • {item.room} • {item.floor}
+                {item.buildingCode || '-'} • {item.roomCode || '-'}
               </Text>
             </View>
 
@@ -336,7 +398,7 @@ export const PrintersScreen: React.FC = () => {
                       { color: themeColors.foreground },
                     ]}
                   >
-                    {t('student.printers.jobsCount', { count: item.queueLength })}
+                    {t('student.printers.jobsCount', { count: queueLength })}
                   </Text>
                 </View>
                 <Text
@@ -360,7 +422,7 @@ export const PrintersScreen: React.FC = () => {
         </CardContent>
       </Card>
     );
-  };
+  }, [theme, themeColors, t, queueData, setSelectedPrinter, getStatusLabel, getStatusStyle]);
 
   return (
     <SafeAreaView
@@ -398,13 +460,13 @@ export const PrintersScreen: React.FC = () => {
           items={[
             {
               label: t('student.printers.summary.total'),
-              value: <CountUp to={printerInfoSummary.total} />,
+              value: <CountUp to={printerSummary.total} />,
             },
             {
               label: t('student.printers.summary.online'),
               value: (
                 <Text style={styles.summaryValueOnline}>
-                  <CountUp to={printerInfoSummary.online} />
+                  <CountUp to={printerSummary.online} />
                 </Text>
               ),
             },
@@ -412,7 +474,7 @@ export const PrintersScreen: React.FC = () => {
               label: t('student.printers.summary.busy'),
               value: (
                 <Text style={styles.summaryValueBusy}>
-                  <CountUp to={printerInfoSummary.busy} />
+                  <CountUp to={printerSummary.busy} />
                 </Text>
               ),
             },
@@ -439,7 +501,7 @@ export const PrintersScreen: React.FC = () => {
               onChangeText={setKeyword}
             />
 
-            <View style={styles.filtersRow}>
+            <View style={styles.filtersColumn}>
               <Select
                 value={status}
                 onChange={(value: string) => setStatus(value as StatusTab)}
@@ -462,7 +524,7 @@ export const PrintersScreen: React.FC = () => {
               />
             </View>
 
-            <View style={styles.checkboxRow}>
+            <View style={styles.checkboxColumn}>
               <TouchableOpacity
                 style={styles.checkboxItem}
                 onPress={() => setOnlyAvailable(!onlyAvailable)}
@@ -571,7 +633,7 @@ export const PrintersScreen: React.FC = () => {
           </CardContent>
         </Card>
 
-        {printerNotices.length > 0 && (
+        {false && (
           <Card style={styles.noticesCard}>
             <CardHeader>
               <CardTitle>
@@ -586,56 +648,58 @@ export const PrintersScreen: React.FC = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {printerNotices.map(notice => {
-                const severityStyle =
-                  notice.severity === 'critical'
-                    ? {
-                        bg: theme === 'dark'
-                          ? 'rgba(239, 68, 68, 0.15)'
-                          : 'rgba(239, 68, 68, 0.1)',
-                        text: theme === 'dark' ? '#fca5a5' : '#dc2626',
-                      }
-                    : notice.severity === 'warning'
+              {[].length > 0 ? (
+                [].map((notice: any) => {
+                  const severityStyle =
+                    notice.severity === 'critical'
                       ? {
                           bg: theme === 'dark'
-                            ? 'rgba(251, 191, 36, 0.15)'
-                            : 'rgba(251, 191, 36, 0.1)',
-                          text: theme === 'dark' ? '#fde047' : '#d97706',
+                            ? 'rgba(239, 68, 68, 0.15)'
+                            : 'rgba(239, 68, 68, 0.1)',
+                          text: theme === 'dark' ? '#fca5a5' : '#dc2626',
                         }
-                      : {
-                          bg: theme === 'dark'
-                            ? 'rgba(56, 189, 248, 0.15)'
-                            : 'rgba(56, 189, 248, 0.1)',
-                          text: theme === 'dark' ? '#7dd3fc' : '#0284c7',
-                        };
+                      : notice.severity === 'warning'
+                        ? {
+                            bg: theme === 'dark'
+                              ? 'rgba(251, 191, 36, 0.15)'
+                              : 'rgba(251, 191, 36, 0.1)',
+                            text: theme === 'dark' ? '#fde047' : '#d97706',
+                          }
+                        : {
+                            bg: theme === 'dark'
+                              ? 'rgba(56, 189, 248, 0.15)'
+                              : 'rgba(56, 189, 248, 0.1)',
+                            text: theme === 'dark' ? '#7dd3fc' : '#0284c7',
+                          };
 
-                return (
-                  <View
-                    key={notice.id}
-                    style={[
-                      styles.noticeItem,
-                      { backgroundColor: severityStyle.bg },
-                    ]}
-                  >
-                    <Text
+                  return (
+                    <View
+                      key={notice.id}
                       style={[
-                        styles.noticeTitle,
-                        { color: themeColors.foreground },
+                        styles.noticeItem,
+                        { backgroundColor: severityStyle.bg },
                       ]}
                     >
-                      {notice.title}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.noticeDetail,
-                        { color: themeColors['muted-foreground'] },
-                      ]}
-                    >
-                      {notice.detail}
-                    </Text>
-                  </View>
-                );
-              })}
+                      <Text
+                        style={[
+                          styles.noticeTitle,
+                          { color: themeColors.foreground },
+                        ]}
+                      >
+                        {notice.title}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.noticeDetail,
+                          { color: themeColors['muted-foreground'] },
+                        ]}
+                      >
+                        {notice.detail}
+                      </Text>
+                    </View>
+                  );
+                })
+              ) : null}
             </CardContent>
           </Card>
         )}
@@ -654,7 +718,13 @@ export const PrintersScreen: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {filteredPrinters.length === 0 ? (
+            {isLoading && !printersData ? (
+              <View style={styles.loadingContainer}>
+                <SkeletonCard />
+                <SkeletonCard />
+                <SkeletonCard />
+              </View>
+            ) : filteredPrinters.length === 0 ? (
               <View style={styles.emptyState}>
                 <Text
                   style={[
@@ -666,15 +736,38 @@ export const PrintersScreen: React.FC = () => {
                 </Text>
               </View>
             ) : (
-              <FlatList
-                data={filteredPrinters}
-                renderItem={renderPrinterCard}
-                keyExtractor={item => item.id}
-                scrollEnabled={false}
-              />
+              <View style={styles.printerListContainer}>
+                <FlatList
+                  data={filteredPrinters}
+                  renderItem={renderPrinterCard}
+                  keyExtractor={item => item.printerId}
+                  key={`printer-list-${printerPage}-${status}-${building}-${colorOnly}-${duplexOnly}`}
+                  removeClippedSubviews={true}
+                  initialNumToRender={10}
+                  maxToRenderPerBatch={10}
+                  windowSize={5}
+                  scrollEnabled={false}
+                  getItemLayout={(_data, index) => ({
+                    length: 200, // Approximate item height
+                    offset: 200 * index,
+                    index,
+                  })}
+                />
+              </View>
             )}
           </CardContent>
         </Card>
+
+        {/* Pagination */}
+        {effectivePagination && effectivePagination.totalItems > 0 && (
+          <Pagination
+            page={printerPage}
+            pageSize={10}
+            total={effectivePagination.totalItems}
+            onChange={setPrinterPage}
+            style={styles.pagination}
+          />
+        )}
       </ScrollView>
 
       <Modal
@@ -691,7 +784,7 @@ export const PrintersScreen: React.FC = () => {
                 { color: themeColors.foreground },
               ]}
             >
-              {selectedPrinter.name}
+              {selectedPrinter.brandName} {selectedPrinter.modelName}
             </Text>
             <Text
               style={[
@@ -699,7 +792,7 @@ export const PrintersScreen: React.FC = () => {
                 { color: themeColors['muted-foreground'] },
               ]}
             >
-              {selectedPrinter.brand} {selectedPrinter.model}
+              {selectedPrinter.brandName} {selectedPrinter.modelName}
             </Text>
 
             <View style={styles.modalSection}>
@@ -726,7 +819,7 @@ export const PrintersScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selectedPrinter.serial}
+                  {selectedPrinter.serialNumber || '-'}
                 </Text>
               </View>
               <View style={styles.modalInfoRow}>
@@ -744,7 +837,7 @@ export const PrintersScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selectedPrinter.ipAddress}
+                  {'-'}
                 </Text>
               </View>
               <View style={styles.modalInfoRow}>
@@ -762,8 +855,7 @@ export const PrintersScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selectedPrinter.building} • {selectedPrinter.room} •{' '}
-                  {selectedPrinter.floor}
+                  {selectedPrinter.buildingCode || '-'} • {selectedPrinter.roomCode || '-'}
                 </Text>
               </View>
               <View style={styles.modalInfoRow}>
@@ -781,7 +873,7 @@ export const PrintersScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selectedPrinter.uptime}%
+                  {'-'}
                 </Text>
               </View>
               <View style={styles.modalInfoRow}>
@@ -799,7 +891,7 @@ export const PrintersScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {t('student.printers.jobsCount', { count: selectedPrinter.queueLength })}
+                  {t('student.printers.jobsCount', { count: (selectedQueueData?.data as any)?.queueCount || 0 })}
                 </Text>
               </View>
             </View>
@@ -864,12 +956,12 @@ export const PrintersScreen: React.FC = () => {
                     { color: themeColors.foreground },
                   ]}
                 >
-                  {selectedPrinter.maxPaperSize}
+                  {selectedPrinter.maxPageSize || '-'}
                 </Text>
               </View>
             </View>
 
-            {selectedPrinter.note && (
+            {false && (
               <View style={styles.modalSection}>
                 <Text
                   style={[
@@ -885,7 +977,7 @@ export const PrintersScreen: React.FC = () => {
                     { color: themeColors['muted-foreground'] },
                   ]}
                 >
-                  {selectedPrinter.note}
+                  {'-'}
                 </Text>
               </View>
             )}
@@ -935,15 +1027,16 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.base,
     marginBottom: spacing.md,
   },
-  filtersRow: {
-    flexDirection: 'row',
+  filtersColumn: {
+    flexDirection: 'column',
     gap: spacing.md,
     marginBottom: spacing.md,
   },
   filterItem: {
-    flex: 1,
+    width: '100%',
   },
-  checkboxRow: {
+  checkboxColumn: {
+    flexDirection: 'column',
     gap: spacing.sm,
   },
   checkboxItem: {
@@ -994,9 +1087,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   printerCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
+    gap: spacing.sm,
   },
   printerCardTitle: {
     flex: 1,
@@ -1079,6 +1171,24 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     textAlign: 'center',
   },
+  printerListContainer: {
+    position: 'relative',
+  },
+  fetchingIndicator: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    zIndex: 1,
+    backgroundColor: 'transparent',
+  },
+  loadingText: {
+    marginTop: spacing.sm,
+    fontSize: typography.fontSize.sm,
+    textAlign: 'center',
+  },
   modalContent: {
     gap: spacing.lg,
   },
@@ -1116,6 +1226,17 @@ const styles = StyleSheet.create({
   },
   modalNote: {
     fontSize: typography.fontSize.sm,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing['3xl'],
+  },
+  pagination: {
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
 });
 

@@ -263,11 +263,12 @@ export interface PrintJobProgressResponse {
 export interface CreatePrintJobRequest {
   uploadedFileId: string;
   printerId: string;
-  pageSizeId: string;
-  colorModeId: string;
+  pageSizeName: string; // Backend expects name (e.g., "A4", "A3"), not ID
+  colorModeName: string; // Backend expects name (e.g., "bw", "color"), not ID
   pageOrientation: PageOrientation;
   printSide: PrintSide;
   numberOfCopy: number;
+  paymentMethod: 'balance' | 'qr'; // Payment method: 'balance' or 'qr'
 }
 
 export interface CreatePrintJobResponse {
@@ -290,8 +291,8 @@ export interface CreatePrintJobResponse {
 export interface CalculateCostRequest {
   uploadedFileId: string;
   printerId: string;
-  pageSizeId: string;
-  colorModeId: string;
+  pageSizeName: string; // Backend expects name (e.g., "A4", "A3"), not ID
+  colorModeName: string; // Backend expects name (e.g., "bw", "color"), not ID
   pageOrientation: PageOrientation;
   printSide: PrintSide;
   numberOfCopy: number;
@@ -459,7 +460,8 @@ export interface StudentProfileResponse {
   majorId?: string;
   majorName?: string;
   classId?: string;
-  className?: string;
+  classCode?: string;
+  className?: string; // Legacy field for backward compatibility
   facultyId?: string;
   facultyName?: string;
   departmentId?: string;
@@ -476,29 +478,163 @@ export interface UpdateStudentProfileRequest {
 // Deposit types
 export interface DepositResponse {
   depositId: string; // UUID
-  depositCode: string;
-  studentId: string;
+  qrUrl?: string; // URL của ảnh QR code
+  transferContent?: string; // Nội dung chuyển khoản
   amount: number;
-  paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded' | 'expired' | 'cancelled';
+  createdAt: string;
+  expiredAt?: string;
+  serverTime?: string; // Thời gian server hiện tại
+  isReused?: boolean; // Cờ báo hiệu đơn được tái sử dụng
+  status: 'pending' | 'completed' | 'failed' | 'refunded' | 'expired' | 'cancelled';
+  // Legacy fields for backward compatibility
+  depositCode?: string;
+  studentId?: string;
+  paymentStatus?: 'pending' | 'completed' | 'failed' | 'refunded' | 'expired' | 'cancelled';
   paymentMethod?: string;
   transactionDate?: string;
-  expiredAt?: string;
   cancellationReason?: string;
-  createdAt: string;
 }
 
 export interface CreateDepositRequest {
-  amount: number;
-  paymentMethod: string;
+  packageId?: string; // UUID của gói nạp (nếu chọn gói)
+  amount?: number; // Số tiền tùy chỉnh (nếu không chọn gói)
+  // Legacy field for backward compatibility
+  paymentMethod?: string;
 }
 
 export interface CreateDepositResponse {
   depositId: string;
-  depositCode: string;
+  qrUrl?: string; // URL của ảnh QR code
+  transferContent?: string; // Nội dung chuyển khoản
   amount: number;
-  paymentStatus: string;
+  status: string;
+  expiredAt: string;
+  isReused?: boolean;
+  serverTime?: string;
+  // Legacy fields for backward compatibility
+  depositCode?: string;
+  paymentStatus?: string;
   paymentUrl?: string;
   qrCode?: string;
-  expiredAt: string;
+}
+
+// Dashboard types
+export interface PrinterStatsResponse {
+  totalPrinters: number;
+  onlinePrinters: number;
+  offlinePrinters: number;
+  maintenancePrinters: number;
+  totalPrintJobs: number;
+  completedPrintJobs: number;
+  failedPrintJobs: number;
+  totalPagesPrinted: number;
+  totalRevenue: number;
+}
+
+// Print History Stats types - theo API documentation
+export interface PrintHistoryStatsResponse {
+  jobsThisMonth: {
+    total: number;
+    color: number;
+    blackWhite: number;
+    growthPercent: number;
+  };
+  pagesLast30Days: number;
+  successRate: {
+    percent: number;
+    status: 'STABLE' | 'UP' | 'DOWN';
+  };
+}
+
+// Student Print History Item Response - theo API documentation
+export interface StudentPrintHistoryItemResponse {
+  jobId: string; // UUID
+  createdAt: string; // ISO LocalDateTime
+  startTime?: string; // ISO LocalDateTime (optional)
+  endTime?: string; // ISO LocalDateTime (optional)
+  printerLocation: string; // BUILDING-ROOM format
+  printerName: string; // Brand Model
+  fileUrl: string;
+  fileName: string;
+  fileType: string;
+  colorMode: string; // color / grayscale / black-white
+  printSide: string; // one-sided / double-sided
+  pageOrientation: string; // portrait / landscape
+  numberOfCopy: number;
+  totalPages: number; // đã nhân với số bản copy
+  printStatus: 'queued' | 'printing' | 'completed' | 'failed' | 'cancelled';
+}
+
+// Student Print Job Detail Response - theo API documentation
+export interface StudentPrintJobDetailResponse {
+  jobId: string; // UUID
+  studentInfo: string; // "SIU12345 - Nguyễn Văn A"
+  createdAt: string; // ISO LocalDateTime
+  startTime?: string; // ISO LocalDateTime
+  endTime?: string; // ISO LocalDateTime
+  printStatus: 'queued' | 'printing' | 'completed' | 'failed' | 'cancelled';
+  fileUrl: string;
+  fileName: string;
+  fileType: string;
+  colorMode: string; // color / grayscale / black-white
+  printSide: string; // one-sided / double-sided
+  pageOrientation: string; // portrait / landscape
+  numberOfCopy: number;
+  originalPages: number; // Số trang gốc của tài liệu
+  totalPrintedPages: number; // Tổng số trang in (đã nhân bản copy)
+  printerDisplayName: string; // "A1-101 - HP LaserJet 1020"
+  paymentMethod: string; // qr hoặc balance
+  pageSizeName: string; // A4
+  pageWidthMm: number; // BigDecimal
+  pageHeightMm: number; // BigDecimal
+  subtotalBeforeDiscount: number; // BigDecimal
+  discountPercentage: number; // BigDecimal (0 - 1)
+  discountAmount: number; // BigDecimal
+  totalPrice: number; // BigDecimal
+}
+
+// Print History Query Params
+export interface PrintHistoryQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: 'queued' | 'printing' | 'completed' | 'failed' | 'cancelled';
+  start_date?: string;
+  end_date?: string;
+  sort_by?: string;
+  sort_direction?: 'asc' | 'desc';
+}
+
+// Student Dashboard types
+export interface StudentDashboardResponse {
+  userName: string;
+  balance: StudentBalanceResponse;
+  printHistoryStats: {
+    jobsThisMonth: {
+      total: number;
+      growthPercent: number;
+    };
+    pagesThisMonth: number;
+    pagesLast30Days: number;
+  };
+  recentFiles: Array<{
+    jobId: string;
+    fileName: string;
+    printerName?: string;
+    printerLocation?: string;
+    totalPages?: number;
+    createdAt: string;
+    printStatus: string;
+  }>;
+}
+
+// Bonus Package types
+export interface BonusPackageResponse {
+  packageId: string;
+  packageName: string;
+  minPages: number;
+  discountPercentage: number;
+  isActive: boolean;
+  description?: string;
 }
 
