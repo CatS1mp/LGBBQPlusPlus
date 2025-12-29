@@ -10,20 +10,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Input } from '../../components/ui';
-import { apiClient } from '../../lib/api/client';
-import { API_ENDPOINTS } from '../../lib/constants';
+import { useResetPassword, useValidateResetToken } from '../../lib/api/services/auth';
 import { colors, spacing } from '../../theme';
 import { useTheme } from '../../lib/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { RootStackParamList } from '../../navigation/types';
+import { Alert, ActivityIndicator } from 'react-native';
 
 type ResetPasswordRouteProp = RouteProp<RootStackParamList, 'ResetPassword'>;
 
 export const ResetPasswordScreen: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigation = useNavigation();
   const route = useRoute<ResetPasswordRouteProp>();
@@ -31,47 +31,79 @@ export const ResetPasswordScreen: React.FC = () => {
   const { t } = useTranslation('pages');
   const { theme } = useTheme();
   const themeColors = colors[theme];
+  const resetPasswordMutation = useResetPassword();
+  
+  // Validate token when screen opens
+  const { data: tokenValidation, isLoading: validatingToken, error: tokenError } = useValidateResetToken(token, !!token);
 
   useEffect(() => {
     if (!token) {
-      setError('Reset token is missing');
+      setError(t('auth.resetPassword.missingToken') || 'Reset token is missing');
+    } else if (tokenError) {
+      setError(t('auth.resetPassword.invalidToken') || 'Invalid or expired token');
     }
-  }, [token]);
+  }, [token, tokenError, t]);
+
+  const validatePassword = (pwd: string): string | null => {
+    if (pwd.length < 8) {
+      return t('auth.resetPassword.passwordMinLength') || 'Password must be at least 8 characters';
+    }
+    if (!/(?=.*[a-z])/.test(pwd)) {
+      return t('auth.resetPassword.passwordLowercase') || 'Password must contain at least one lowercase letter';
+    }
+    if (!/(?=.*[A-Z])/.test(pwd)) {
+      return t('auth.resetPassword.passwordUppercase') || 'Password must contain at least one uppercase letter';
+    }
+    if (!/(?=.*\d)/.test(pwd)) {
+      return t('auth.resetPassword.passwordNumber') || 'Password must contain at least one number';
+    }
+    if (!/(?=.*[@$!%*?&#])/.test(pwd)) {
+      return t('auth.resetPassword.passwordSpecial') || 'Password must contain at least one special character (@$!%*?&#)';
+    }
+    return null;
+  };
 
   const handleSubmit = async () => {
     if (!token) {
-      setError('Reset token is missing');
+      setError(t('auth.resetPassword.missingToken') || 'Reset token is missing');
       return;
     }
     if (!password || !confirmPassword) {
-      setError('Please fill in all fields');
+      setError(t('auth.resetPassword.fillAllFields') || 'Please fill in all fields');
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.resetPassword.passwordsNotMatch') || 'Passwords do not match');
       return;
     }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
-    setLoading(true);
     setError('');
 
     try {
-      await apiClient.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
+      await resetPasswordMutation.mutateAsync({
         token,
         newPassword: password,
       });
-      // Navigate to login on success
-      navigation.navigate('Login' as never);
+      Alert.alert(
+        t('auth.resetPassword.successTitle') || 'Success',
+        t('auth.resetPassword.successMessage') || 'Password reset successfully. Please login again.',
+        [
+          {
+            text: t('auth.resetPassword.ok') || 'OK',
+            onPress: () => navigation.navigate('Login' as never),
+          },
+        ]
+      );
     } catch (err: unknown) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to reset password';
+        err instanceof Error ? err.message : t('auth.resetPassword.error') || 'Failed to reset password';
       setError(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -97,7 +129,7 @@ export const ResetPasswordScreen: React.FC = () => {
                 { color: themeColors.foreground },
               ]}
             >
-              Reset Password
+              {t('auth.resetPassword.title') || 'Reset Password'}
             </Text>
             <Text
               style={[
@@ -105,8 +137,22 @@ export const ResetPasswordScreen: React.FC = () => {
                 { color: themeColors['muted-foreground'] },
               ]}
             >
-              Enter your new password
+              {t('auth.resetPassword.description') || 'Enter your new password'}
             </Text>
+
+            {validatingToken ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={themeColors.primary} />
+                <Text
+                  style={[
+                    styles.loadingText,
+                    { color: themeColors['muted-foreground'] },
+                  ]}
+                >
+                  {t('auth.resetPassword.validatingToken') || 'Validating token...'}
+                </Text>
+              </View>
+            ) : null}
 
             {error ? (
               <View style={styles.errorContainer}>
@@ -122,27 +168,30 @@ export const ResetPasswordScreen: React.FC = () => {
             ) : null}
 
             <Input
-              label="New Password"
+              label={t('auth.resetPassword.newPasswordLabel') || 'New Password'}
               value={password}
               onChangeText={setPassword}
-              placeholder="••••••••"
+              placeholder={t('auth.resetPassword.passwordPlaceholder') || '••••••••'}
               secureTextEntry
               autoCapitalize="none"
+              editable={!validatingToken && !!tokenValidation?.data?.valid}
             />
 
             <Input
-              label="Confirm Password"
+              label={t('auth.resetPassword.confirmPasswordLabel') || 'Confirm Password'}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
-              placeholder="••••••••"
+              placeholder={t('auth.resetPassword.passwordPlaceholder') || '••••••••'}
               secureTextEntry
               autoCapitalize="none"
+              editable={!validatingToken && !!tokenValidation?.data?.valid}
             />
 
             <Button
-              title={loading ? 'Resetting...' : 'Reset Password'}
+              title={resetPasswordMutation.isPending ? (t('auth.resetPassword.resetting') || 'Resetting...') : (t('auth.resetPassword.resetButton') || 'Reset Password')}
               onPress={handleSubmit}
-              loading={loading}
+              loading={resetPasswordMutation.isPending}
+              disabled={validatingToken || !tokenValidation?.data?.valid}
               style={styles.submitButton}
             />
 
@@ -161,7 +210,7 @@ export const ResetPasswordScreen: React.FC = () => {
                   { color: themeColors.primary },
                 ]}
               >
-                Back to Login
+                {t('auth.resetPassword.backToLogin') || 'Back to Login'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -223,6 +272,16 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: 14,
     fontWeight: '500',
+  },
+  loadingContainer: {
+    marginBottom: spacing.md,
+    padding: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  loadingText: {
+    fontSize: 14,
+    textAlign: 'center',
   },
 });
 

@@ -10,16 +10,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Input } from '../../components/ui';
-import { apiClient } from '../../lib/api/client';
-import { API_ENDPOINTS } from '../../lib/constants';
+import { useForgotPassword } from '../../lib/api/services/auth';
 import { colors, spacing } from '../../theme';
 import { useTheme } from '../../lib/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
+import { Alert } from 'react-native';
 
 export const ForgotPasswordScreen: React.FC = () => {
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
@@ -27,6 +27,7 @@ export const ForgotPasswordScreen: React.FC = () => {
   const { t } = useTranslation('pages');
   const { theme } = useTheme();
   const themeColors = colors[theme];
+  const forgotPasswordMutation = useForgotPassword();
 
   useEffect(() => {
     if (resendTimer > 0) {
@@ -44,27 +45,28 @@ export const ForgotPasswordScreen: React.FC = () => {
 
   const handleSubmit = async () => {
     if (!email) {
-      setError('Email is required');
+      setError(t('auth.forgotPassword.emailRequired') || 'Email is required');
       return;
     }
     if (!validateEmail(email)) {
-      setError('Invalid email address');
+      setError(t('auth.forgotPassword.invalidEmail') || 'Invalid email address');
       return;
     }
 
-    setLoading(true);
     setError('');
 
     try {
-      await apiClient.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
+      await forgotPasswordMutation.mutateAsync({ email });
       setSuccess(true);
       setResendTimer(60);
+      Alert.alert(
+        t('auth.forgotPassword.successTitle') || 'Success',
+        t('auth.forgotPassword.successMessage') || 'If the email exists in the system, we have sent a password reset link to your email.'
+      );
     } catch (err: unknown) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to send reset email';
+        err instanceof Error ? err.message : t('auth.forgotPassword.error') || 'Failed to send reset email';
       setError(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -90,7 +92,7 @@ export const ForgotPasswordScreen: React.FC = () => {
                 { color: themeColors.foreground },
               ]}
             >
-              Forgot Password
+              {t('auth.forgotPassword.title') || 'Forgot Password'}
             </Text>
             <Text
               style={[
@@ -98,7 +100,7 @@ export const ForgotPasswordScreen: React.FC = () => {
                 { color: themeColors['muted-foreground'] },
               ]}
             >
-              Enter your email to receive a password reset link
+              {t('auth.forgotPassword.description') || 'Enter your email to receive a password reset link'}
             </Text>
 
             {error ? (
@@ -122,16 +124,16 @@ export const ForgotPasswordScreen: React.FC = () => {
                     { color: themeColors.primary },
                   ]}
                 >
-                  Reset link sent! Check your email.
+                  {t('auth.forgotPassword.linkSent') || 'Reset link sent! Check your email.'}
                 </Text>
               </View>
             ) : null}
 
             <Input
-              label="Email"
+              label={t('auth.forgotPassword.emailLabel') || 'Email'}
               value={email}
               onChangeText={setEmail}
-              placeholder="you@example.com"
+              placeholder={t('auth.forgotPassword.emailPlaceholder') || 'you@example.com'}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -139,9 +141,9 @@ export const ForgotPasswordScreen: React.FC = () => {
             />
 
             <Button
-              title={loading ? 'Sending...' : 'Send Reset Link'}
+              title={forgotPasswordMutation.isPending ? (t('auth.forgotPassword.sending') || 'Sending...') : (t('auth.forgotPassword.sendLink') || 'Send Reset Link')}
               onPress={handleSubmit}
-              loading={loading}
+              loading={forgotPasswordMutation.isPending}
               disabled={success}
               style={styles.submitButton}
             />
@@ -149,7 +151,7 @@ export const ForgotPasswordScreen: React.FC = () => {
             {success && (
               <TouchableOpacity
                 onPress={handleSubmit}
-                disabled={resendTimer > 0 || loading}
+                disabled={resendTimer > 0 || forgotPasswordMutation.isPending}
                 style={[
                   styles.resendButton,
                   resendTimer > 0 && styles.resendButtonDisabled,
@@ -162,8 +164,8 @@ export const ForgotPasswordScreen: React.FC = () => {
                   ]}
                 >
                   {resendTimer > 0
-                    ? `Resend in ${resendTimer}s`
-                    : 'Resend Email'}
+                    ? t('auth.forgotPassword.resendIn', { seconds: resendTimer }) || `Resend in ${resendTimer}s`
+                    : t('auth.forgotPassword.resendEmail') || 'Resend Email'}
                 </Text>
               </TouchableOpacity>
             )}
@@ -183,7 +185,7 @@ export const ForgotPasswordScreen: React.FC = () => {
                   { color: themeColors.primary },
                 ]}
               >
-                Back to Login
+                {t('auth.forgotPassword.backToLogin') || 'Back to Login'}
               </Text>
             </TouchableOpacity>
           </View>
