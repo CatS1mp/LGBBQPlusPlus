@@ -4,16 +4,17 @@ export type RootStackParamList = {
   ResetPassword: { token: string };
   StudentTabs: undefined;
   StaffTabs: undefined;
+  DevTools: undefined;
 };
 
 export type StudentTabParamList = {
   StudentDashboard: undefined;
   StudentPrint: undefined;
-  StudentHistory: undefined;
   StudentPrinters: undefined;
   StudentProfile: undefined;
   StudentBuyPages: undefined;
   StudentSettings: undefined;
+  StudentRoleSwitcher?: undefined;
 };
 
 export type StaffTabParamList = {
@@ -24,5 +25,6 @@ export type StaffTabParamList = {
   StaffSystemLogs: undefined;
   StaffConfiguration: undefined;
   StaffSettings: undefined;
+  StaffRoleSwitcher?: undefined;
 };
 
