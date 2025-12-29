@@ -24,6 +24,7 @@ import {
 } from '../../data/printHistoryMock';
 import { format } from 'date-fns';
 import { usePrintJobs } from '../../lib/api/services/printJobs';
+import { usePrintHistoryStats } from '../../lib/api/services/printHistory';
 import type { PrintJobResponse } from '../../types/api';
 import { ActivityIndicator } from 'react-native';
 
@@ -44,9 +45,38 @@ export const HistoryScreen: React.FC = () => {
     status: status === 'all' ? undefined : status,
   });
 
+  const { data: statsData } = usePrintHistoryStats();
+
   const printJobs = useMemo(() => {
     return printJobsData?.data?.data || [];
   }, [printJobsData]);
+
+  const summaryStats = useMemo(() => {
+    if (statsData?.data) {
+      const totalJobs = statsData.data.totalJobs || 0;
+      const completedJobs = statsData.data.completedJobs || 0;
+      const successRate = totalJobs > 0 ? completedJobs / totalJobs : 0;
+      return {
+        totalJobsThisMonth: totalJobs,
+        totalPagesThisMonth: statsData.data.totalPagesPrinted || 0,
+        successRate,
+      };
+    }
+    // Fallback: tính từ printJobs nếu không có stats
+    const thisMonth = new Date();
+    thisMonth.setDate(1);
+    thisMonth.setHours(0, 0, 0, 0);
+    const thisMonthJobs = printJobs.filter(job => {
+      const jobDate = new Date(job.createdAt);
+      return jobDate >= thisMonth;
+    });
+    const completedJobs = thisMonthJobs.filter(job => job.printStatus === 'completed');
+    return {
+      totalJobsThisMonth: thisMonthJobs.length,
+      totalPagesThisMonth: thisMonthJobs.reduce((sum, job) => sum + (job.totalPages || 0), 0),
+      successRate: thisMonthJobs.length > 0 ? completedJobs.length / thisMonthJobs.length : 0,
+    };
+  }, [statsData, printJobs]);
 
   const filtered = useMemo(() => {
     return printJobs.filter(item => {
@@ -145,17 +175,17 @@ export const HistoryScreen: React.FC = () => {
               { color: themeColors['muted-foreground'] },
             ]}
           >
-            {item.printer.brandName} {item.printer.modelName} • {item.printer.location}
+            {item.printer.brandName || ''} {item.printer.modelName || ''} • {item.printer.location || '-'}
           </Text>
           <View style={styles.historyItemDetails}>
             <Text
               style={[
                 styles.historyItemDetail,
-                { color: themeColors['muted-foreground'] },
-              ]}
-            >
-              {item.config.colorMode}{' '}
-              • {item.config.printSide === 'double-sided' ? t('student.history.printSide.twoSided') : t('student.history.printSide.oneSided')} • {item.pricing.totalPages} {t('student.history.pages')}
+              { color: themeColors['muted-foreground'] },
+            ]}
+          >
+              {item.config.colorMode || '-'}{' '}
+              • {item.config.printSide === 'double-sided' ? t('student.history.printSide.twoSided') : t('student.history.printSide.oneSided')} • {item.pricing.totalPages || 0} {t('student.history.pages')}
             </Text>
             <Text
               style={[
@@ -236,7 +266,7 @@ export const HistoryScreen: React.FC = () => {
               label: t('student.history.jobsThisMonth'),
               value: (
                 <>
-                  <CountUp to={printHistorySummaryMock.totalJobsThisMonth} /> {t('student.history.jobs')}
+                  <CountUp to={summaryStats.totalJobsThisMonth} /> {t('student.history.jobs')}
                 </>
               ),
             },
@@ -244,13 +274,13 @@ export const HistoryScreen: React.FC = () => {
               label: t('student.history.pagesPrinted'),
               value: (
                 <>
-                  <CountUp to={printHistorySummaryMock.totalPagesThisMonth} /> {t('student.history.pages')}
+                  <CountUp to={summaryStats.totalPagesThisMonth} /> {t('student.history.pages')}
                 </>
               ),
             },
             {
               label: t('student.history.successRate'),
-              value: `${Math.round(printHistorySummaryMock.successRate * 100)}%`,
+              value: `${Math.round(summaryStats.successRate * 100)}%`,
             },
           ]}
         />
@@ -372,7 +402,7 @@ export const HistoryScreen: React.FC = () => {
                 { color: themeColors['muted-foreground'] },
               ]}
             >
-              ID: {selected.id} • {selected.fileType} • {selected.fileSizeKB} KB
+              ID: {selected.id || '-'} • {selected.fileType || '-'} • {selected.fileSizeKB || 0} KB
             </Text>
 
             <View style={styles.modalSection}>

@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius, typography } from '../../theme';
@@ -15,20 +17,34 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { Input } from '../../components/ui/Input';
 import { CountUp } from '../../components/ui/CountUp';
-import { studentProfilePageMock } from '../../data/studentProfilePageMock';
 import { useNavigation } from '@react-navigation/native';
+import { useStudentProfile, useUpdateStudentProfile, useChangePassword } from '../../lib/api/services/studentProfile';
+import { useStudentBalance } from '../../lib/api/services/studentBalance';
+import { getErrorMessage } from '../../lib/utils/error';
+import { useMockModeStore } from '../../lib/stores/useMockModeStore';
 
 export const ProfileScreen: React.FC = () => {
   const { t } = useTranslation('pages');
+  const { t: tCommon } = useTranslation('common');
   const { theme } = useTheme();
   const themeColors = colors[theme];
   const navigation = useNavigation();
+  
+  // API calls
+  const { data: profileData, isLoading: loadingProfile, error: profileError } = useStudentProfile();
+  const { data: balanceData, isLoading: loadingBalance, error: balanceError } = useStudentBalance();
+  const updateProfileMutation = useUpdateStudentProfile();
+  const changePasswordMutation = useChangePassword();
+  const { isMockMode } = useMockModeStore();
+
+  const profile = profileData?.data;
+  const balance = balanceData?.data?.balanceAmount || 0;
+
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
   const [editForm, setEditForm] = useState({
-    fullName: studentProfilePageMock.fullName,
-    phone: studentProfilePageMock.phone,
-    dateOfBirth: studentProfilePageMock.dateOfBirth,
+    fullName: '',
+    phone: '',
   });
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -36,19 +52,65 @@ export const ProfileScreen: React.FC = () => {
     confirmPassword: '',
   });
 
-  const handleSaveProfile = () => {
-    console.log('Saving profile:', editForm);
-    setIsEditProfileOpen(false);
+  // Initialize form when profile loads
+  useEffect(() => {
+    if (profile) {
+      setEditForm({
+        fullName: profile.fullName || '',
+        phone: profile.phoneNumber || '',
+      });
+    }
+  }, [profile]);
+
+  const handleSaveProfile = async () => {
+    if (!editForm.fullName.trim()) {
+      Alert.alert('Lỗi', 'Vui lòng nhập họ tên');
+      return;
+    }
+
+    try {
+      await updateProfileMutation.mutateAsync({
+        fullName: editForm.fullName,
+        phoneNumber: editForm.phone || undefined,
+      });
+      Alert.alert('Thành công', 'Cập nhật thông tin thành công');
+      setIsEditProfileOpen(false);
+    } catch (error) {
+      Alert.alert('Lỗi', getErrorMessage(error));
+    }
   };
 
-  const handleChangePassword = () => {
-    console.log('Changing password');
-    setIsChangePasswordOpen(false);
-    setPasswordForm({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
+  const handleChangePassword = async () => {
+    if (!passwordForm.currentPassword || !passwordForm.newPassword) {
+      Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      Alert.alert('Lỗi', 'Mật khẩu mới không khớp');
+      return;
+    }
+
+    if (passwordForm.newPassword.length < 6) {
+      Alert.alert('Lỗi', 'Mật khẩu phải có ít nhất 6 ký tự');
+      return;
+    }
+
+    try {
+      await changePasswordMutation.mutateAsync({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      });
+      Alert.alert('Thành công', 'Đổi mật khẩu thành công');
+      setIsChangePasswordOpen(false);
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+    } catch (error) {
+      Alert.alert('Lỗi', getErrorMessage(error));
+    }
   };
 
   return (
@@ -100,7 +162,7 @@ export const ProfileScreen: React.FC = () => {
                     { color: themeColors['primary-foreground'] },
                   ]}
                 >
-                  {studentProfilePageMock.avatarInitials}
+                  {profile?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
                 </Text>
               </View>
             </View>
@@ -112,7 +174,7 @@ export const ProfileScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                {studentProfilePageMock.fullName}
+                {profile?.fullName || 'Đang tải...'}
               </Text>
               <View
                 style={[
@@ -139,19 +201,21 @@ export const ProfileScreen: React.FC = () => {
               </View>
             </View>
 
-            <View style={styles.actionButtons}>
-              <Button
-                title={t('student.profile.editProfile')}
-                onPress={() => setIsEditProfileOpen(true)}
-                variant="outline"
-                style={styles.actionButton}
-              />
-              <Button
-                title={t('student.profile.changePassword')}
-                onPress={() => setIsChangePasswordOpen(true)}
-                variant="outline"
-                style={styles.actionButton}
-              />
+            <View style={styles.actionButtonsContainer}>
+              <View style={styles.actionButtons}>
+                <Button
+                  title={t('student.profile.editProfile')}
+                  onPress={() => setIsEditProfileOpen(true)}
+                  variant="outline"
+                  style={styles.actionButton}
+                />
+                <Button
+                  title={t('student.profile.changePassword')}
+                  onPress={() => setIsChangePasswordOpen(true)}
+                  variant="outline"
+                  style={styles.actionButton}
+                />
+              </View>
             </View>
           </CardContent>
         </Card>
@@ -170,7 +234,7 @@ export const ProfileScreen: React.FC = () => {
               <Button
                 title={t('student.profile.balance.topUp')}
                 onPress={() => {
-                  // Navigation handled by tab navigator
+                  navigation.navigate('StudentBuyPages' as never);
                 }}
                 size="sm"
                 style={styles.topUpButton}
@@ -183,7 +247,7 @@ export const ProfileScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                <CountUp to={Math.floor(studentProfilePageMock.balance)} />
+                <CountUp to={Math.floor(balance)} />
               </Text>
               <Text
                 style={[
@@ -234,7 +298,7 @@ export const ProfileScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                {studentProfilePageMock.email}
+                {profile?.email || '-'}
               </Text>
             </View>
             <View style={styles.infoRow}>
@@ -252,7 +316,7 @@ export const ProfileScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                {studentProfilePageMock.phone}
+                {profile?.phoneNumber || '-'}
               </Text>
             </View>
           </CardContent>
@@ -287,7 +351,7 @@ export const ProfileScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                {studentProfilePageMock.studentId}
+                {profile?.studentCode || '-'}
               </Text>
             </View>
             <View style={styles.infoRow}>
@@ -305,7 +369,7 @@ export const ProfileScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                {studentProfilePageMock.faculty}
+                {profile?.facultyName || '-'}
               </Text>
             </View>
             <View style={styles.infoRow}>
@@ -323,7 +387,7 @@ export const ProfileScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                {studentProfilePageMock.major}
+                {profile?.departmentName || profile?.majorName || '-'}
               </Text>
             </View>
             <View style={styles.infoRow}>
@@ -333,7 +397,7 @@ export const ProfileScreen: React.FC = () => {
                   { color: themeColors['muted-foreground'] },
                 ]}
               >
-                {t('student.profile.academicDetails.academicYear')}
+                {t('student.profile.academicDetails.classCode')}
               </Text>
               <Text
                 style={[
@@ -341,7 +405,7 @@ export const ProfileScreen: React.FC = () => {
                   { color: themeColors.foreground },
                 ]}
               >
-                {studentProfilePageMock.academicYear}
+                {profile?.classCode || profile?.className || '-'}
               </Text>
             </View>
           </CardContent>
@@ -388,33 +452,15 @@ export const ProfileScreen: React.FC = () => {
               style={styles.modalInput}
             />
           </View>
-          <View style={styles.modalField}>
-            <Text
-              style={[
-                styles.modalLabel,
-                { color: themeColors.foreground },
-              ]}
-            >
-              {t('student.profile.contactInfo.dateOfBirth')}
-            </Text>
-            <Input
-              value={editForm.dateOfBirth}
-              onChangeText={text =>
-                setEditForm({ ...editForm, dateOfBirth: text })
-              }
-              placeholder={t('student.profile.editProfileModal.dateOfBirthPlaceholder')}
-              style={styles.modalInput}
-            />
-          </View>
           <View style={styles.modalActions}>
             <Button
-              title={t('common.cancel')}
+              title={tCommon('cancel')}
               onPress={() => setIsEditProfileOpen(false)}
               variant="outline"
               style={styles.modalButton}
             />
             <Button
-              title={t('common.save')}
+              title={tCommon('save')}
               onPress={handleSaveProfile}
               style={styles.modalButton}
             />
@@ -488,7 +534,7 @@ export const ProfileScreen: React.FC = () => {
           </View>
           <View style={styles.modalActions}>
             <Button
-              title={t('common.cancel')}
+              title={tCommon('cancel')}
               onPress={() => setIsChangePasswordOpen(false)}
               variant="outline"
               style={styles.modalButton}
@@ -529,10 +575,11 @@ const styles = StyleSheet.create({
   },
   profileCard: {
     marginBottom: spacing.lg,
-    alignItems: 'center',
   },
   avatarContainer: {
     marginBottom: spacing.md,
+    alignItems: 'center',
+    width: '100%',
   },
   avatar: {
     width: 128,
@@ -563,6 +610,10 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     fontWeight: '600',
   },
+  actionButtonsContainer: {
+    width: '100%',
+    marginTop: spacing.md,
+  },
   actionButtons: {
     flexDirection: 'row',
     gap: spacing.md,
@@ -570,6 +621,8 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
+    minWidth: 0,
+    marginHorizontal: 0,
   },
   balanceCard: {
     marginBottom: spacing.lg,
@@ -647,8 +700,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.md,
     marginTop: spacing.md,
+    width: '100%',
   },
   modalButton: {
     flex: 1,
+    minWidth: 0,
   },
 });

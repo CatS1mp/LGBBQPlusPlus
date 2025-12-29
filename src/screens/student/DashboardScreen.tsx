@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,12 @@ import {
   ScrollView,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { StudentTabParamList } from '../../navigation/types';
 import { colors, spacing, borderRadius, typography } from '../../theme';
 import { useTheme } from '../../lib/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
@@ -21,19 +25,91 @@ import {
 import { Button } from '../../components/ui/Button';
 import { CountUp } from '../../components/ui/CountUp';
 import { Badge } from '../../components/ui/Badge';
-import { Gradient, gradientPresets } from '../../components/ui/Gradient';
+import { gradientPresets } from '../../components/ui/Gradient';
+import { GradientText } from '../../components/ui/GradientText';
 import {
-  studentStatsMock,
   studentQuickActionsMock,
   studentHighlightsMock,
-  studentRecentPrintsMock,
-  studentProfileSummaryMock,
 } from '../../data/studentDashboardMock';
+import { useStudentDashboard, useBonusPackages } from '../../lib/api/services/student';
+import { formatDistanceToNow } from 'date-fns';
+import { vi } from 'date-fns/locale';
+import { DashboardSkeleton } from '../../components/ui/DashboardSkeleton';
+
+type NavigationProp = NativeStackNavigationProp<StudentTabParamList>;
 
 export const StudentDashboardScreen: React.FC = () => {
   const { t } = useTranslation('pages');
   const { theme } = useTheme();
   const themeColors = colors[theme];
+  const navigation = useNavigation<NavigationProp>();
+
+  // API calls - using unified dashboard API
+  const {
+    data: dashboardData,
+    isLoading: isLoadingDashboard,
+    isError: isErrorDashboard,
+  } = useStudentDashboard();
+  const { data: bonusPackagesData, isLoading: isLoadingBonusPackages } =
+    useBonusPackages();
+
+  // Extract data from dashboard response
+  const dashboard = dashboardData?.data?.data;
+  const userName = dashboard?.userName || 'Sinh viên';
+  const balance = dashboard?.balance?.balanceAmount || 0;
+  const balanceResponse = dashboard?.balance;
+  const jobsThisMonth = dashboard?.printHistoryStats?.jobsThisMonth?.total || 0;
+  const jobsGrowthPercent =
+    dashboard?.printHistoryStats?.jobsThisMonth?.growthPercent || 0;
+  const pagesThisMonth = dashboard?.printHistoryStats?.pagesThisMonth || 0;
+  const pagesLast30Days = dashboard?.printHistoryStats?.pagesLast30Days || 0;
+
+  // Calculate pages difference
+  const estimatedPagesLastMonth = Math.max(0, pagesLast30Days - pagesThisMonth);
+  const pagesDifference = pagesThisMonth - estimatedPagesLastMonth;
+
+  // Bonus packages
+  const bonusPackages = Array.isArray(bonusPackagesData?.data?.data)
+    ? bonusPackagesData.data.data
+    : [];
+  const activeBonusPackages = Array.isArray(bonusPackages)
+    ? bonusPackages
+        .filter((pkg: any) => pkg?.isActive !== false)
+        .sort((a: any, b: any) => (a?.minPages || 0) - (b?.minPages || 0))
+    : [];
+
+  const isLoading = isLoadingDashboard || isLoadingBonusPackages;
+
+  // Transform recent files to match UI format
+  const transformedRecentPrints = useMemo(() => {
+    const recentFiles = Array.isArray(dashboard?.recentFiles)
+      ? dashboard.recentFiles
+      : [];
+    if (!Array.isArray(recentFiles) || recentFiles.length === 0) {
+      return [];
+    }
+    return recentFiles.map((item: any) => {
+      const jobId = item?.jobId || '';
+      const fileName = item?.fileName || 'Unknown';
+      const printer = item?.printerName || item?.printerLocation || 'Unknown';
+      const totalPages = item?.totalPages || 0;
+      const createdAt = item?.createdAt || new Date().toISOString();
+      const printStatus = item?.printStatus || 'completed';
+
+      return {
+        id: jobId,
+        fileName,
+        printer,
+        size: 'A4', // Default size
+        pagesUsedA4: totalPages,
+        timeAgo: formatDistanceToNow(new Date(createdAt), {
+          addSuffix: true,
+          locale: vi,
+        }),
+        status: printStatus,
+      };
+    });
+  }, [dashboard?.recentFiles]);
 
   const getStatusStyle = (status: string) => {
     switch (status) {
@@ -77,69 +153,107 @@ export const StudentDashboardScreen: React.FC = () => {
     }
   };
 
-  const renderQuickAction = ({ item }: { item: typeof studentQuickActionsMock[0] }) => (
-    <TouchableOpacity
-      style={[
-        styles.quickActionItem,
-        {
-          backgroundColor:
-            theme === 'dark'
-              ? 'rgba(255, 255, 255, 0.05)'
-              : 'rgba(255, 255, 255, 0.9)',
-          borderColor: themeColors.border,
-        },
-      ]}
-      onPress={() => {
-        // Navigation will be handled by tab navigator
-      }}
-    >
-      <View style={styles.quickActionContent}>
-        <Text
-          style={[
-            styles.quickActionTitle,
-            { color: themeColors.foreground },
-          ]}
-        >
-          {item.title}
-        </Text>
-        <Text
-          style={[
-            styles.quickActionDescription,
-            { color: themeColors['muted-foreground'] },
-          ]}
-        >
-          {item.description}
-        </Text>
-      </View>
-      {item.badge && (
-        <View
-          style={[
-            styles.badge,
-            {
-              backgroundColor:
-                theme === 'dark'
-                  ? 'rgba(34, 197, 94, 0.15)'
-                  : 'rgba(34, 197, 94, 0.1)',
-            },
-          ]}
-        >
+  const renderQuickAction = ({ item }: { item: typeof studentQuickActionsMock[0] }) => {
+    // Get translated title and description
+    const translatedTitle = t(`dashboard.student.quickActions.items.${item.id}.title`);
+    const translatedDescription = t(`dashboard.student.quickActions.items.${item.id}.description`);
+    
+    // Map badge value to translation key
+    const getBadgeKey = (badge: string | undefined): string | null => {
+      if (!badge) return null;
+      // Map Vietnamese badge text to translation key
+      const badgeMap: Record<string, string> = {
+        'Mới': 'new',
+        'mới': 'new',
+      };
+      const badgeKey = badgeMap[badge] || 'new'; // Default to 'new' if not found
+      return `dashboard.student.quickActions.badges.${badgeKey}`;
+    };
+    
+    const badgeTranslationKey = getBadgeKey(item.badge);
+    const translatedBadge = badgeTranslationKey ? t(badgeTranslationKey) : null;
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.quickActionItem,
+          {
+            backgroundColor:
+              theme === 'dark'
+                ? 'rgba(255, 255, 255, 0.05)'
+                : 'rgba(255, 255, 255, 0.9)',
+            borderColor: themeColors.border,
+          },
+        ]}
+        onPress={() => {
+          // Navigate based on action ID
+          switch (item.id) {
+            case 'print':
+              navigation.navigate('StudentPrint');
+              break;
+            case 'buy':
+              navigation.navigate('StudentBuyPages');
+              break;
+            case 'history':
+              // Navigate to Profile tab which contains history
+              navigation.navigate('StudentProfile');
+              break;
+            case 'printers':
+              navigation.navigate('StudentPrinters');
+              break;
+            default:
+              break;
+          }
+        }}
+      >
+        <View style={styles.quickActionContent}>
           <Text
             style={[
-              styles.badgeText,
+              styles.quickActionTitle,
+              { color: themeColors.foreground },
+            ]}
+          >
+            {translatedTitle}
+          </Text>
+          <Text
+            style={[
+              styles.quickActionDescription,
+              { color: themeColors['muted-foreground'] },
+            ]}
+          >
+            {translatedDescription}
+          </Text>
+        </View>
+        {translatedBadge && (
+          <View
+            style={[
+              styles.badge,
               {
-                color:
-                  theme === 'dark' ? '#86efac' : '#16a34a',
+                backgroundColor:
+                  theme === 'dark'
+                    ? 'rgba(34, 197, 94, 0.15)'
+                    : 'rgba(34, 197, 94, 0.1)',
               },
             ]}
           >
-            {item.badge}
-          </Text>
-        </View>
-      )}
-    </TouchableOpacity>
-  );
+            <Text
+              style={[
+                styles.badgeText,
+                {
+                  color:
+                    theme === 'dark' ? '#86efac' : '#16a34a',
+                },
+              ]}
+            >
+              {translatedBadge}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
-  const renderRecentPrint = ({ item }: { item: typeof studentRecentPrintsMock[0] }) => {
+  const renderRecentPrint = ({ item }: { item: typeof transformedRecentPrints[0] }) => {
     const statusStyle = getStatusStyle(item.status);
     return (
       <View
@@ -169,7 +283,7 @@ export const StudentDashboardScreen: React.FC = () => {
               { color: themeColors['muted-foreground'] },
             ]}
           >
-            {item.printer} • {item.size}
+            {item.printer || '-'} • {item.size || '-'}
           </Text>
           <View style={styles.recentPrintFooter}>
             <Text
@@ -215,6 +329,52 @@ export const StudentDashboardScreen: React.FC = () => {
     );
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: themeColors.background },
+        ]}
+        edges={['top']}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <DashboardSkeleton />
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // Error state
+  if (isErrorDashboard) {
+    return (
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: themeColors.background },
+        ]}
+        edges={['top']}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.errorContainer}>
+            <Text style={[styles.errorText, { color: themeColors.destructive }]}>
+              Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại sau.
+            </Text>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView
       style={[
@@ -253,22 +413,23 @@ export const StudentDashboardScreen: React.FC = () => {
         <Card style={styles.balanceCard}>
           <CardContent>
             <View style={styles.greetingSection}>
-              <Text
-                style={[
-                  styles.greetingText,
-                  { color: themeColors.foreground },
-                ]}
+              <GradientText
+                colors={gradientPresets.primary}
+                style={styles.greetingText}
               >
-                {t('dashboard.student.greeting', { name: studentProfileSummaryMock.fullName })}
-              </Text>
+                {t('dashboard.student.greeting', { name: userName })}
+              </GradientText>
             </View>
 
             <View style={styles.statsGrid}>
-              <Gradient
-                colors={gradientPresets.info}
+              <View
                 style={[
                   styles.statCard,
                   {
+                    backgroundColor:
+                      theme === 'dark'
+                        ? 'rgba(255, 255, 255, 0.05)'
+                        : 'rgba(255, 255, 255, 0.9)',
                     borderColor: themeColors.border,
                   },
                 ]}
@@ -282,14 +443,13 @@ export const StudentDashboardScreen: React.FC = () => {
                   {t('dashboard.student.stats.balance')}
                 </Text>
                 <View style={styles.statValueRow}>
-                  <Text
+                  <CountUp
+                    to={balance}
                     style={[
                       styles.statValue,
                       { color: themeColors.foreground },
-                    ]}
-                  >
-                    <CountUp to={studentStatsMock.balance} />
-                  </Text>
+                    ] as any}
+                  />
                   <Text
                     style={[
                       styles.statUnit,
@@ -307,13 +467,16 @@ export const StudentDashboardScreen: React.FC = () => {
                 >
                   {t('dashboard.student.stats.availableBalance')}
                 </Text>
-              </Gradient>
+              </View>
 
-              <Gradient
-                colors={gradientPresets.success}
+              <View
                 style={[
                   styles.statCard,
                   {
+                    backgroundColor:
+                      theme === 'dark'
+                        ? 'rgba(255, 255, 255, 0.05)'
+                        : 'rgba(255, 255, 255, 0.9)',
                     borderColor: themeColors.border,
                   },
                 ]}
@@ -321,26 +484,25 @@ export const StudentDashboardScreen: React.FC = () => {
                 <Text
                   style={[
                     styles.statLabel,
-                    { color: '#ffffff' },
+                    { color: themeColors['muted-foreground'] },
                   ]}
                 >
                   {t('dashboard.student.stats.jobsThisMonth')}
                 </Text>
-                <Text
+                <CountUp
+                  to={jobsThisMonth}
                   style={[
                     styles.statValue,
-                    { color: '#ffffff' },
-                  ]}
-                >
-                  <CountUp to={studentStatsMock.jobsThisMonth} />
-                </Text>
-                {studentStatsMock.jobsChangePercent !== 0 && (
+                    { color: themeColors.foreground },
+                  ] as any}
+                />
+                {jobsGrowthPercent !== 0 && (
                   <Text
                     style={[
                       styles.statChange,
                       {
                         color:
-                          studentStatsMock.jobsChangePercent > 0
+                          jobsGrowthPercent > 0
                             ? theme === 'dark'
                               ? '#86efac'
                               : '#16a34a'
@@ -350,18 +512,20 @@ export const StudentDashboardScreen: React.FC = () => {
                       },
                     ]}
                   >
-                    {t('dashboard.student.stats.changePercent', {
-                      percent: `${studentStatsMock.jobsChangePercent > 0 ? '+' : ''}${studentStatsMock.jobsChangePercent}`,
-                    })}
+                    {jobsGrowthPercent > 0 ? '+' : ''}
+                    {jobsGrowthPercent}% so với tháng trước
                   </Text>
                 )}
-              </Gradient>
+              </View>
 
-              <Gradient
-                colors={gradientPresets.warning}
+              <View
                 style={[
                   styles.statCard,
                   {
+                    backgroundColor:
+                      theme === 'dark'
+                        ? 'rgba(255, 255, 255, 0.05)'
+                        : 'rgba(255, 255, 255, 0.9)',
                     borderColor: themeColors.border,
                   },
                 ]}
@@ -369,36 +533,35 @@ export const StudentDashboardScreen: React.FC = () => {
                 <Text
                   style={[
                     styles.statLabel,
-                    { color: '#ffffff' },
+                    { color: themeColors['muted-foreground'] },
                   ]}
                 >
                   {t('dashboard.student.stats.pagesThisMonth')}
                 </Text>
                 <View style={styles.statValueRow}>
-                  <Text
+                  <CountUp
+                    to={pagesThisMonth}
                     style={[
                       styles.statValue,
-                      { color: '#ffffff' },
-                    ]}
-                  >
-                    <CountUp to={studentStatsMock.pagesThisMonth} />
-                  </Text>
+                      { color: themeColors.foreground },
+                    ] as any}
+                  />
                   <Text
                     style={[
                       styles.statUnit,
-                      { color: '#ffffff', opacity: 0.9 },
+                      { color: themeColors['muted-foreground'] },
                     ]}
                   >
                     A4
                   </Text>
                 </View>
-                {studentStatsMock.pagesChangePercent !== 0 && (
+                {estimatedPagesLastMonth > 0 && pagesDifference !== 0 && (
                   <Text
                     style={[
                       styles.statChange,
                       {
                         color:
-                          studentStatsMock.pagesChangePercent > 0
+                          pagesDifference > 0
                             ? theme === 'dark'
                               ? '#86efac'
                               : '#16a34a'
@@ -408,12 +571,11 @@ export const StudentDashboardScreen: React.FC = () => {
                       },
                     ]}
                   >
-                    {t('dashboard.student.stats.changePercent', {
-                      percent: `${studentStatsMock.pagesChangePercent > 0 ? '+' : ''}${studentStatsMock.pagesChangePercent}`,
-                    })}
+                    {pagesDifference > 0 ? '+' : ''}
+                    {pagesDifference} trang so với tháng trước
                   </Text>
                 )}
-              </Gradient>
+              </View>
             </View>
 
             <View
@@ -453,8 +615,7 @@ export const StudentDashboardScreen: React.FC = () => {
                         width: `${Math.min(
                           100,
                           Math.round(
-                            (studentStatsMock.giftedQuotaUsed /
-                              studentStatsMock.giftedQuotaTotal) *
+                            ((balanceResponse?.balanceInPages || 0) / 150) *
                               100
                           )
                         )}%`,
@@ -469,8 +630,8 @@ export const StudentDashboardScreen: React.FC = () => {
                       { color: themeColors['muted-foreground'] },
                     ]}
                   >
-                    Đã dùng: {studentStatsMock.giftedQuotaUsed} /{' '}
-                    {studentStatsMock.giftedQuotaTotal} A4
+                    Đã dùng: {150 - (balanceResponse?.balanceInPages || 0)} /{' '}
+                    150 A4
                   </Text>
                   <Text
                     style={[
@@ -479,8 +640,7 @@ export const StudentDashboardScreen: React.FC = () => {
                     ]}
                   >
                     Còn lại:{' '}
-                    {studentStatsMock.giftedQuotaTotal -
-                      studentStatsMock.giftedQuotaUsed}{' '}
+                    {balanceResponse?.balanceInPages || 0}{' '}
                     A4
                   </Text>
                 </View>
@@ -513,6 +673,49 @@ export const StudentDashboardScreen: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Bonus packages highlight */}
+            {activeBonusPackages.length > 0 && (
+              <View
+                style={[
+                  styles.highlightItem,
+                  {
+                    backgroundColor:
+                      theme === 'dark'
+                        ? 'rgba(255, 255, 255, 0.05)'
+                        : 'rgba(241, 245, 249, 0.8)',
+                    borderColor: themeColors.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.highlightTitle,
+                    { color: themeColors.foreground },
+                  ]}
+                >
+                  Gói giảm giá khi in
+                </Text>
+                {activeBonusPackages.map((pkg: any, idx: number) => {
+                  const discountPercent = (pkg.discountPercentage * 100).toFixed(0);
+                  const description =
+                    pkg.discountPercentage === 0
+                      ? `In từ ${pkg.minPages} trang: không giảm giá`
+                      : `In từ ${pkg.minPages} trang: giảm ${discountPercent}%`;
+                  return (
+                    <Text
+                      key={idx}
+                      style={[
+                        styles.highlightDescription,
+                        { color: themeColors['muted-foreground'] },
+                      ]}
+                    >
+                      • {description}
+                    </Text>
+                  );
+                })}
+              </View>
+            )}
+            {/* Other highlights */}
             {studentHighlightsMock.map(item => (
               <View
                 key={item.id}
@@ -587,7 +790,20 @@ export const StudentDashboardScreen: React.FC = () => {
           </CardHeader>
           <CardContent>
             <FlatList
-              data={studentRecentPrintsMock.slice(0, 5)}
+              data={transformedRecentPrints}
+              ListEmptyComponent={
+                isLoading ? (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={themeColors.primary} />
+                  </View>
+                ) : (
+                  <View style={styles.emptyContainer}>
+                    <Text style={[styles.emptyText, { color: themeColors['muted-foreground'] }]}>
+                      {t('dashboard.student.recent.empty')}
+                    </Text>
+                  </View>
+                )
+              }
               renderItem={renderRecentPrint}
               keyExtractor={item => item.id}
               scrollEnabled={false}
@@ -682,14 +898,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     gap: spacing.md,
     marginBottom: spacing.md,
   },
   statCard: {
-    flex: 1,
-    minWidth: '45%',
+    width: '100%',
     padding: spacing.md,
     borderRadius: borderRadius.lg,
     borderWidth: 1,
@@ -864,5 +1078,28 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: typography.fontSize.xs,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing['3xl'],
+  },
+  emptyContainer: {
+    padding: spacing.xl,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: typography.fontSize.base,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing['3xl'],
+  },
+  errorText: {
+    fontSize: typography.fontSize.base,
+    textAlign: 'center',
   },
 });

@@ -13,18 +13,26 @@ import { useTranslation } from 'react-i18next';
 import { colors, spacing, borderRadius, typography } from '../../theme';
 import { useTheme } from '../../lib/hooks/useTheme';
 import { useLanguageStore } from '../../lib/stores/useLanguageStore';
+import { useMockModeStore } from '../../lib/stores/useMockModeStore';
+import { useAuthStore } from '../../lib/stores/useAuthStore';
 import { locales } from '../../lib/i18n/config';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
+import { useNavigation } from '@react-navigation/native';
+import { navigationRef } from '../../navigation/AppNavigator';
 
 export const StaffSettingsScreen: React.FC = () => {
   const { t } = useTranslation('pages');
   const { theme, themeMode, setThemeMode } = useTheme();
   const { locale, setLocale } = useLanguageStore();
+  const { isMockMode } = useMockModeStore();
+  const { user, setUser } = useAuthStore();
+  const navigation = useNavigation();
   const themeColors = colors[theme];
   const [notifications, setNotifications] = React.useState(true);
   const [emailAlerts, setEmailAlerts] = React.useState(true);
+  const [versionTapCount, setVersionTapCount] = React.useState(0);
 
   return (
     <SafeAreaView
@@ -149,11 +157,68 @@ export const StaffSettingsScreen: React.FC = () => {
                   : t('staff.settings.language.vietnamese'),
                 value: loc,
               }))}
-              placeholder={t('staff.printers.selectLanguage')}
+              placeholder={t('staff.settings.language.select')}
               style={styles.languageSelect}
             />
           </CardContent>
         </Card>
+
+        {isMockMode && (
+          <Card style={styles.settingsCard}>
+            <CardHeader>
+              <CardTitle>
+                <Text
+                  style={[
+                    styles.cardTitleText,
+                    { color: themeColors.foreground },
+                  ]}
+                >
+                  {t('staff.settings.mockMode.title', 'Mock Mode')}
+                </Text>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <View style={styles.settingItem}>
+                <View style={styles.settingInfo}>
+                  <Text
+                    style={[
+                      styles.settingDescription,
+                      { color: themeColors['muted-foreground'] },
+                    ]}
+                  >
+                    {t('staff.settings.mockMode.description', 'Switch between Student and Staff views in mock mode')}
+                  </Text>
+                </View>
+              </View>
+              <Select
+                value={user?.userType || 'staff'}
+                onChange={(value: string) => {
+                  if (user) {
+                    setUser({
+                      ...user,
+                      userType: value as 'student' | 'staff',
+                    });
+                    // Navigate to force re-render
+                    setTimeout(() => {
+                      if (navigationRef.isReady()) {
+                        navigationRef.reset({
+                          index: 0,
+                          routes: [{ name: value === 'staff' ? 'StaffTabs' : 'StudentTabs' }],
+                        });
+                      }
+                    }, 100);
+                  }
+                }}
+                options={[
+                  { label: t('staff.settings.mockMode.student', 'Student'), value: 'student' },
+                  { label: t('staff.settings.mockMode.staff', 'Staff'), value: 'staff' },
+                ]}
+                placeholder={t('staff.settings.mockMode.selectRole', 'Select Role')}
+                style={styles.roleSelect}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         <Card style={styles.settingsCard}>
           <CardHeader>
@@ -311,7 +376,17 @@ export const StaffSettingsScreen: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <View style={styles.aboutItem}>
+            <TouchableOpacity
+              style={styles.aboutItem}
+              onPress={() => {
+                const newCount = versionTapCount + 1;
+                setVersionTapCount(newCount);
+                if (newCount >= 5) {
+                  setVersionTapCount(0);
+                  navigation.navigate('DevTools' as never);
+                }
+              }}
+            >
               <Text
                 style={[
                   styles.aboutLabel,
@@ -328,7 +403,7 @@ export const StaffSettingsScreen: React.FC = () => {
               >
                 1.0.0
               </Text>
-            </View>
+            </TouchableOpacity>
             <View style={styles.aboutItem}>
               <Text
                 style={[
@@ -352,8 +427,24 @@ export const StaffSettingsScreen: React.FC = () => {
 
         <Button
           title={t('staff.settings.logout')}
-          onPress={() => {
-            console.log('Logout');
+          onPress={async () => {
+            const { logout } = useAuthStore.getState();
+            const { setMockMode } = useMockModeStore.getState();
+            const { clearProgress } = usePrintProgressStore.getState();
+            
+            // Clear print progress on logout
+            await clearProgress();
+            
+            logout();
+            setMockMode(false);
+            setTimeout(() => {
+              if (navigationRef.isReady()) {
+                navigationRef.reset({
+                  index: 0,
+                  routes: [{ name: 'Login' }],
+                });
+              }
+            }, 100);
           }}
           variant="destructive"
           style={styles.logoutButton}
@@ -432,6 +523,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   languageSelect: {
+    marginTop: spacing.sm,
+  },
+  roleSelect: {
     marginTop: spacing.sm,
   },
 });
